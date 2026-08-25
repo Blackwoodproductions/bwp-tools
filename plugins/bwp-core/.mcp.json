@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://dbhub.imagehosting.space/mcp",
       "headers": {
-        "Authorization": "Bearer __DBHUB_RO_TOKEN__"
+        "Authorization": "Bearer 87cf306e51346b3d469dd6451bc9f93298db48a596d8fd007249e1040f8aa54b"
       }
     },
     "logfire": {
