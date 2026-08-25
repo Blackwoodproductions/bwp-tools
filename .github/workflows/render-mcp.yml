@@ -1,0 +1,37 @@
+# Renders plugins/bwp-core/.mcp.json from .mcp.json.tpl with the read token
+# held in the DBHUB_RO_TOKEN repository secret (same value as DBHUB_AUTH_TOKEN
+# in seo-money-deployments' dbhub-production environment). Never edit
+# .mcp.json by hand - edit the .tpl and let this job commit the result.
+name: Render bwp-core .mcp.json
+
+on:
+  push:
+    branches: [main]
+    paths: ['plugins/bwp-core/.mcp.json.tpl']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Render .mcp.json
+        env:
+          DBHUB_RO_TOKEN: ${{ secrets.DBHUB_RO_TOKEN }}
+        run: |
+          test -n "$DBHUB_RO_TOKEN" || { echo "DBHUB_RO_TOKEN secret is empty"; exit 1; }
+          sed "s|__DBHUB_RO_TOKEN__|${DBHUB_RO_TOKEN}|" plugins/bwp-core/.mcp.json.tpl > plugins/bwp-core/.mcp.json
+          if grep -q '__DBHUB_RO_TOKEN__' plugins/bwp-core/.mcp.json; then echo "placeholder still present"; exit 1; fi
+          python3 -c "import json; json.load(open('plugins/bwp-core/.mcp.json'))"
+
+      - name: Commit rendered file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add plugins/bwp-core/.mcp.json
+          git diff --cached --quiet || git commit -m "chore(bwp-core): render .mcp.json [skip ci]"
+          git push

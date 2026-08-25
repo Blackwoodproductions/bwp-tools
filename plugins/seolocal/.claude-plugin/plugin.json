@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "seolocal",
+  "version": "1.0.0",
+  "description": "SEO Local dashboard (seolocal-app) skills: read-only SQL over bwp_seo via the bwp-core DBHub server.",
+  "author": {
+    "name": "rascoder_og"
+  },
+  "dependencies": [
+    "bwp-core"
+  ]
+}

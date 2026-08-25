@@ -1,0 +1,26 @@
+{
+  "skill_name": "cade-api",
+  "evals": [
+    {
+      "id": 1,
+      "name": "enumerate-keyword-endpoints",
+      "prompt": "What CADE API endpoints exist for keywords in prod? Give me a short list of method + path + one-line summary.",
+      "expected_output": "Uses list_endpoints.py with --filter keywords against env=prod. Summarizes the keyword-related endpoints (at minimum: GET list-by-domain, POST generate, GET single, PUT update, POST rejections, DELETE). Does NOT call any endpoint — this is enumeration only. Saves no file under .claude/cade-api-run/.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "health-check-prod",
+      "prompt": "Hit /system/health on prod via the CADE API and tell me what came back — especially the worker count and any active queues.",
+      "expected_output": "Runs `call_api.py GET /system/health` against env=prod (no --confirm needed since GET is a read). Reports the 2xx status + body, highlighting workers and queues. A run log file is written to .claude/cade-api-run/ with the {inputs, outputs} schema and the API key masked as ***.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "keyword-list-schema-lookup",
+      "prompt": "Looking at the CADE prod API, what does the response look like for GET /keywords/domain/{domain}? I want to know the schema so I know what fields to expect in the response body — but don't call the endpoint itself, just inspect the schema.",
+      "expected_output": "Uses list_endpoints.py --json /api/v1/keywords/domain/{domain} to dump the OpenAPI operation. Walks the response schema (likely DomainKeywordListResponse) and reports the shape: keywords array, pagination fields (total, page, page_size, total_pages), and the nested keyword item fields (id, keyword, search_intent, status, rejection_reason, supporting_keywords, relevant_questions). Does NOT call the live endpoint. Saves no file under .claude/cade-api-run/.",
+      "files": []
+    }
+  ]
+}
