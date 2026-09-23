@@ -47,7 +47,7 @@ you ── HTTPS ──▶ dbhub.imagehosting.space   (caddy-edge, seo-money-dep
    bwp-rw     /rw/mcp  ─▶ dbhub-rw  execute_sql_*_rw, DB user claude_rw (SELECT, UPDATE)
 ```
 
-- Read tools: `execute_sql_{cade,seo,ranking}` (readonly, 30 s timeout, 500-row cap → `"truncated": true`), `search_objects_*`, `explain_sql_*`.
+- Read tools: `execute_sql_{cade,seo,ranking}` (readonly, 30 s timeout, no row cap), `search_objects_*`, `explain_sql_*`.
 - Update tools: `execute_sql_{cade,seo,ranking}_rw`. The DB role cannot INSERT, DELETE, TRUNCATE or run DDL — the engine refuses. Skills require a SELECT first and a primary-key `WHERE`.
 - The read token is a GitHub secret (`DBHUB_RO_TOKEN`) that CI renders into `plugins/bwp-core/.mcp.json`; repo read access = read access to the DBs. Update tokens are per person and never stored in this repo.
 - Server side: `seo-money-deployments` → `docs/setup-dbhub-tutorial.md` (DNS, DB users, secrets, deploy, rotation).

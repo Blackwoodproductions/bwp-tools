@@ -1,6 +1,6 @@
 ---
 name: seolocal-db-queries
-description: Run safe, read-only SQL queries against the SEO Local production MariaDB (`bwp_seo`) through the bwp-core DBHub MCP server. Use this skill whenever the user asks to query the prod SEO database, look up records, check the state of specific rows, count or aggregate data, run ad-hoc SELECTs, audit data, or directly invokes "seolocal-db-queries". Triggers on phrases like "query the seo db", "look up domain X in prod", "how many resellers are there", "what's the state of order Y in the SEO db", "select from bwp_domains", "show me rows where", "audit the bwp_register table". The Prisma schema in `packages/prisma/prisma/bwpSeo/schema.prisma` is the authoritative column reference. Four-layer read-only safety contract (MariaDB role + READ ONLY transaction + DBHub SQL classifier + timeout/row cap). Read-only by construction — never mutates production. For source-code investigation use Read/Grep; this skill is one input to investigations, not their orchestrator.
+description: Run safe, read-only SQL queries against the SEO Local production MariaDB (`bwp_seo`) through the bwp-core DBHub MCP server. Use this skill whenever the user asks to query the prod SEO database, look up records, check the state of specific rows, count or aggregate data, run ad-hoc SELECTs, audit data, or directly invokes "seolocal-db-queries". Triggers on phrases like "query the seo db", "look up domain X in prod", "how many resellers are there", "what's the state of order Y in the SEO db", "select from bwp_domains", "show me rows where", "audit the bwp_register table". The Prisma schema in `packages/prisma/prisma/bwpSeo/schema.prisma` is the authoritative column reference. Four-layer read-only safety contract (MariaDB role + READ ONLY transaction + DBHub SQL classifier + timeout). Read-only by construction — never mutates production. For source-code investigation use Read/Grep; this skill is one input to investigations, not their orchestrator.
 ---
 
 # seolocal-db-queries
@@ -8,7 +8,7 @@ description: Run safe, read-only SQL queries against the SEO Local production Ma
 Read-only SQL access to the SEO Local production MariaDB. One job, done safely.
 
 - **Tools** — provided by the `bwp-core` plugin's `dbhub` MCP server, source id `seo` (full ids: `mcp__plugin_bwp-core_dbhub__<tool>`):
-  - `execute_sql_seo` `{ "sql": "..." }` — read-only, 30 s timeout, hard cap 500 rows. **Add your own `LIMIT` (≤ 100 unless the user needs more)** — the cap is a backstop, not a default.
+  - `execute_sql_seo` `{ "sql": "..." }` — read-only, 30 s timeout, no row cap.
   - `search_objects_seo` `{ "object_type": "table|view|column|index", "pattern": "bwp_dom%", "detail_level": "names|summary|full", "table": "..." }` — progressive disclosure: `names` first, `full` only for the one table you need.
   - `explain_sql_seo` `{ "sql": "..." }` — returns the plan **without executing** (replaces the old `--explain`).
 - **Schema reference**: `references/schema.md` — pointer at the canonical Prisma schemas plus a curated table summary. Load when you need column-level detail.
@@ -46,7 +46,7 @@ Four layers. Any single layer being bypassed leaves the others standing:
 1. **MariaDB role** — the read source connects as `claude_readonly` (`SELECT` only). Operator setup snippet below.
 2. **READ ONLY transaction** — DBHub runs every `execute_sql_seo` inside `START TRANSACTION READ ONLY; ...; ROLLBACK`. MariaDB rejects writes server-side with error `1792`.
 3. **SQL classifier** — DBHub strips comments and string literals, allows only statements starting with `SELECT / WITH / EXPLAIN / SHOW / DESCRIBE / DESC`, and rejects any mutating keyword (`INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|MERGE|GRANT|REVOKE|RENAME|REPLACE INTO`) anywhere in the body — including inside CTEs. On MariaDB, DDL implicitly commits and is stopped **only** by this layer, so layer 1 matters.
-4. **Timeout + row cap** — `query_timeout = 30` s, `max_rows = 500`. A capped result carries `"truncated": true`; run `COUNT(*)` for the true total instead of raising the cap.
+4. **Timeout** — `query_timeout = 30` s. No row cap.
 
 If a call is rejected, that's the guardrail doing its job — rephrase, don't try to bypass.
 

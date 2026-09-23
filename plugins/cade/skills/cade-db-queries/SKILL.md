@@ -1,6 +1,6 @@
 ---
 name: cade-db-queries
-description: Run safe, read-only SQL queries against the CADE production PostgreSQL database through the bwp-core DBHub MCP server. Use this skill whenever the user asks to query the prod db, look up records in production, check the state of specific rows, count or aggregate data, run ad-hoc SELECTs, audit data, or directly invokes "cade-db-queries". Triggers on phrases like "query prod", "check the production database", "how many X are there in prod", "what's the state of Y in the db", "select from", "show me rows where", "audit the X table", "look up Z in the database". Four-layer read-only safety contract (DB role + READ ONLY transaction + DBHub SQL classifier + timeout/row cap) and a maintained schema reference covering every model in `app/models/`. Read-only by construction — never mutates production. For telemetry/log analysis or source-code investigation, use other tools — this skill is one input to those workflows, not their orchestrator.
+description: Run safe, read-only SQL queries against the CADE production PostgreSQL database through the bwp-core DBHub MCP server. Use this skill whenever the user asks to query the prod db, look up records in production, check the state of specific rows, count or aggregate data, run ad-hoc SELECTs, audit data, or directly invokes "cade-db-queries". Triggers on phrases like "query prod", "check the production database", "how many X are there in prod", "what's the state of Y in the db", "select from", "show me rows where", "audit the X table", "look up Z in the database". Four-layer read-only safety contract (DB role + READ ONLY transaction + DBHub SQL classifier + timeout) and a maintained schema reference covering every model in `app/models/`. Read-only by construction — never mutates production. For telemetry/log analysis or source-code investigation, use other tools — this skill is one input to those workflows, not their orchestrator.
 ---
 
 # cade-db-queries
@@ -8,7 +8,7 @@ description: Run safe, read-only SQL queries against the CADE production Postgre
 Read-only SQL access to the CADE production Postgres. One job, done safely.
 
 - **Tools** — provided by the `bwp-core` plugin's `dbhub` MCP server, source id `cade` (full ids: `mcp__plugin_bwp-core_dbhub__<tool>`):
-  - `execute_sql_cade` `{ "sql": "..." }` — read-only, 30 s timeout, hard cap 500 rows. **Add your own `LIMIT` (≤ 100 unless the user needs more)** — the cap is a backstop, not a default.
+  - `execute_sql_cade` `{ "sql": "..." }` — read-only, 30 s timeout, no row cap.
   - `search_objects_cade` `{ "object_type": "table|view|column|index|schema|function|procedure", "pattern": "%name%", "detail_level": "names|summary|full", "schema": "public", "table": "..." }` — progressive disclosure: `names` first, `full` only for the one table you need.
   - `explain_sql_cade` `{ "sql": "..." }` — returns the plan **without executing** (replaces the old `--explain`).
 - **Schema reference**: `references/schema.md` — full table-by-table breakdown. Load when you need column-level detail.
@@ -38,7 +38,7 @@ Four layers. Any single layer being bypassed leaves the others standing:
 1. **Postgres role** — the read source connects as `claude_readonly` (`SELECT` only). Operator setup snippet below.
 2. **Read-only transaction** — DBHub runs every `execute_sql_cade` inside `BEGIN READ ONLY; ...; ROLLBACK`. Postgres rejects writes server-side.
 3. **SQL classifier** — DBHub strips comments and string literals, allows only statements starting with `SELECT / WITH / EXPLAIN / SHOW`, and rejects any mutating keyword (`INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|MERGE|GRANT|REVOKE|RENAME`) anywhere in the body — including inside CTEs — with "Read-only mode is enabled".
-4. **Timeout + row cap** — `query_timeout = 30` s, `max_rows = 500`. A capped result carries `"truncated": true`; run `COUNT(*)` for the true total instead of raising the cap.
+4. **Timeout** — `query_timeout = 30` s. No row cap.
 
 If a call is rejected, that's the guardrail doing its job — rephrase, don't try to bypass. Caveat: a read-only transaction does not constrain privileged-role *functions* (`pg_read_file`, `lo_export`, `dblink`, `COPY ... TO PROGRAM`) — which is why layer 1 matters.
 

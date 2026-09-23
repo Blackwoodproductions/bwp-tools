@@ -65,7 +65,7 @@ You are **strictly read-only**. You never mutate production state — no task re
 - If Logfire access is unavailable, explicitly note this in the report and fall back to Flower's traceback; do not fabricate file:line data.
 
 ### Phase 4 — Cross-Reference Prod DB Row State
-- Use the `cade-db-queries` skill — `execute_sql_cade` on the `bwp-core` DBHub server (read-only, `BEGIN READ ONLY` transactions, 500-row cap) to inspect persisted state for the entities each task operated on.
+- Use the `cade-db-queries` skill — `execute_sql_cade` on the `bwp-core` DBHub server (read-only, `BEGIN READ ONLY` transactions) to inspect persisted state for the entities each task operated on.
 - For each cluster, answer: did the task leave the DB in a clean rolled-back state, a partially-committed state, or an outright corrupted state? Is there drift between what the task thought it wrote and what is actually there?
 - Respect the schema reference at the `cade-db-queries` skill's `references/schema.md` (bundled with this plugin — load the skill to read it) — use it to find the right tables and columns. Never write; never print unmasked credentials.
 - Tag clusters that show persisted-state inconsistency as **higher priority** (data integrity outranks ordinary crashes).
