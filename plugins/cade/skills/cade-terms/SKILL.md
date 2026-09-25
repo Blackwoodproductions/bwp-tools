@@ -5,7 +5,7 @@ description: "WordPress duplicate category/tag cleanup for CADE domains — the 
 
 # cade-terms
 
-> **Paths:** `<skill-dir>` is this skill's directory — Claude Code prints it as *Base directory for this skill* when the skill loads. Run commands from the **cade-service repo root** so `.claude/skills.settings.{env}.json`, the repo `.env` (local) and `.claude/cade-terms-merge-runs/` resolve. One script, `<skill-dir>/scripts/merge_terms.py`, owns every mode below.
+> **Paths:** `<skill-dir>` is this skill's directory — Claude Code prints it as *Base directory for this skill* when the skill loads. Run commands from the **cade-service repo root** so `.claude/skills.settings.{env}.json`, the repo `.env` (local) and `.claude/cade-terms-merge-runs/` resolve. One script, `<skill-dir>/scripts/merge_terms.py`, owns every mode below. Examples write `python` — use the cade-service `venv/bin/python`. Settings blocks per skill: see the bwp-tools README.
 
 The term-merge flow (design W4, `docs/category-dedup/merge-playbook.md`): **check** writes reviewable plans, **merge** applies them, **auto** handles the no-judgment groups, **verify** asserts a run landed.
 

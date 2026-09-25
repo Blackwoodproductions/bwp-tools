@@ -1,45 +1,97 @@
 # bwp-tools
 
-Blackwood Productions' Claude plugins. The repo **is** the marketplace (`.claude-plugin/marketplace.json`); it works in **Claude Code, Claude Desktop and Cowork**.
+Blackwood Productions' Claude plugins. This private repo **is** the marketplace (`.claude-plugin/marketplace.json`).
 
-| Plugin | Gives you | Who installs it |
+| Plugin | Gives you | Install it if you work on |
 |---|---|---|
-| `bwp-core` | MCP connectors: **DBHub** (hosted, read-only SQL over CADE Postgres + `bwp_seo` / `bwp_ranking_service` MariaDB) and **Logfire** | pulled in automatically by the three below |
-| `seolocal` | `seolocal-db-queries` | seolocal-app people |
-| `cade` | `cade-db-queries`, `cade-api`, `cade-flower`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content`, `cade-terms` + agent `cade-task-failure-auditor` | cade-service people |
-| `ranking` | `ranking-db-queries` | ranking-service people |
-| `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw` — **UPDATE-capable** DB access (SELECT + UPDATE only, never DELETE). Claude Code only, personal token | only people who need to fix row state |
+| `cade` | `cade-db-queries`, `cade-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
+| `seolocal` | `seolocal-db-queries` | seolocal-app |
+| `ranking` | `ranking-db-queries` | ranking-service |
+| `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE) | only if you need to fix row state |
+| `bwp-core` | The shared connectors: **DBHub** (read-only SQL over prod) and **Logfire** | installed automatically with the three above |
 
-Skills are namespaced by plugin: `/cade:cade-db-queries`, `/seolocal:seolocal-db-queries`, `/ranking:ranking-db-queries`, `/cade:cade-terms`, …
+Skills are namespaced by plugin: `/cade:cade-api`, `/seolocal:seolocal-db-queries`, …
 
-## Install — Claude Code (terminal or the Desktop *Code* tab)
+## 1. Install (Claude Code)
+
+You need read access to this GitHub repo.
 
 ```bash
 claude plugin marketplace add Blackwoodproductions/bwp-tools
-cd ~/work/blackwood-productions/cade-workdir/cade-service          && claude plugin install cade@bwp-tools     --scope local
-cd ~/work/blackwood-productions/seo-local-workdir/seolocal-app      && claude plugin install seolocal@bwp-tools --scope local
-cd ~/work/blackwood-productions/ranking-app-workdir/ranking-service && claude plugin install ranking@bwp-tools  --scope local
-# optional, for UPDATEs — prompts for your personal token
-claude plugin install bwp-rw@bwp-tools
+
+# from inside each repo you work on
+cd cade-service     && claude plugin install cade@bwp-tools     --scope local
+cd seolocal-app     && claude plugin install seolocal@bwp-tools --scope local
+cd ranking-service  && claude plugin install ranking@bwp-tools  --scope local
 ```
 
-`--scope local` writes `enabledPlugins` into that repo's `.claude/settings.local.json` (gitignored). `bwp-core` is installed and enabled alongside each project plugin. Nothing to configure: the read connector's token ships inside the plugin.
+`--scope local` enables the plugin for that repo only (written to its gitignored `.claude/settings.local.json`). Start Claude in the repo, or run `/reload-plugins` in an open session. Sign in to Logfire when prompted.
 
-## Install — Claude Desktop / Cowork
+That's it for the `*-db-queries` skills and Logfire: the read-only DB token ships inside `bwp-core`.
 
-Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tools` (you need read access to this private repo and a paid Claude plan) → install `cade`, `seolocal` or `ranking`. `bwp-core` comes with them; the `dbhub` and `logfire` connectors appear under the plugin — sign in to Logfire when prompted.
+## 2. Extra setup for the cade script skills
 
-What works where:
+`cade-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks` and `reconcile-wp-content` run Python scripts. For those:
 
-| | Claude Code | Desktop *Code* tab | Desktop chat / Cowork |
-|---|---|---|---|
-| Skills + `*-db-queries` (read) | ✅ | ✅ | ✅ |
-| `cade-task-failure-auditor` agent | ✅ | ✅ | Cowork only |
-| Logfire | ✅ | ✅ | ✅ |
-| `bwp-rw` (UPDATE) | ✅ | ✅ | ✗ (no way to hold a personal token) |
-| Script-based cade skills (`cade-api`, `cade-flower`, `cleanup-html-blocks`, `reconcile-wp-content`, `cade-terms`, …) | ✅ from the cade-service checkout with `venv/bin/python` | ✅ same | ✗ |
+- Run Claude from the **cade-service repo root**, with its `venv/` set up (the scripts use `venv/bin/python`) and a valid `.env`.
+- Create `.claude/skills.settings.prod.json` in cade-service (gitignored). Add `…stg.json` / `…local.json` only if you target those envs.
 
-## How DB access works
+| Block | Keys | Used by |
+|---|---|---|
+| `cade-api` | `api-key` · `api-url` *(optional, bare host)* · `wp-plugin-api-key` *(optional)* | cade-api |
+| `cade-flower` | `url` · `user` · `password` | cade-flower |
+| `cade-db-queries` | `host` · `port` · `user` · `pass` · `db-default` | dump-clustered-content, check-for-seomoney-content, reconcile-wp-content |
+| `cade-terms-merge` | `database_url` *(write-capable role)* · `credential_encryption_key` · `crawler_proxy_urls` *(optional)* | cade-terms (reconcile-wp-content reads its encryption key too) |
+
+```json
+{
+  "cade-api":         { "api-key": "…" },
+  "cade-flower":      { "url": "…", "user": "…", "password": "…" },
+  "cade-db-queries":  { "host": "…", "port": 5432, "user": "…", "pass": "…", "db-default": "seo-acg" },
+  "cade-terms-merge": { "database_url": "postgresql://…", "credential_encryption_key": "…" }
+}
+```
+
+Fill in only the blocks for the skills you use. Ask Fernando for the values.
+
+- **Environment:** scripts default to prod. Use `--env stg|local` per call, or `export CADE_SKILL_ENV=stg` for a session. A missing settings file fails loudly and never falls back to prod.
+- **Direct-DB scripts** (dump, seomoney check, reconcile, cade-terms) connect straight to prod Postgres, so your IP must be allowlisted. `reconcile-wp-content` also needs `psql`.
+
+## 3. UPDATE access (`bwp-rw`, optional)
+
+Ask Fernando for your personal update token, then:
+
+```bash
+claude plugin install bwp-rw@bwp-tools   # user scope: available in every repo; prompts for the token
+```
+
+To change or clear the token: `/plugin` → **Installed** → `bwp-rw` → **Configure options**.
+
+## 4. Claude Desktop / Cowork
+
+Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tools` → install `cade`, `seolocal` or `ranking`. You need read access to this repo and a paid plan.
+
+| | Claude Code / Desktop *Code* tab | Desktop chat / Cowork |
+|---|---|---|
+| `*-db-queries` skills (read) + Logfire | ✅ | ✅ |
+| `cade-task-failure-auditor` agent | ✅ | Cowork only |
+| `bwp-rw` (UPDATE) | ✅ | ✗ (can't hold a personal token) |
+| cade script skills (§2) | ✅ | ✗ |
+
+## 5. Updating
+
+```
+/plugin marketplace update bwp-tools
+/reload-plugins
+```
+
+Desktop: click **Update** on the marketplace.
+
+---
+
+## Maintainers
+
+**How DB access works**
 
 ```
 you ── HTTPS ──▶ dbhub.imagehosting.space   (caddy-edge, seo-money-deployments)
@@ -47,31 +99,18 @@ you ── HTTPS ──▶ dbhub.imagehosting.space   (caddy-edge, seo-money-dep
    bwp-rw     /rw/mcp  ─▶ dbhub-rw  execute_sql_*_rw, DB user claude_rw (SELECT, UPDATE)
 ```
 
-- Read tools: `execute_sql_{cade,seo,ranking}` (readonly, 30 s timeout, no row cap), `search_objects_*`, `explain_sql_*`.
-- Update tools: `execute_sql_{cade,seo,ranking}_rw`. The DB role cannot INSERT, DELETE, TRUNCATE or run DDL — the engine refuses. Skills require a SELECT first and a primary-key `WHERE`.
-- The read token is a GitHub secret (`DBHUB_RO_TOKEN`) that CI renders into `plugins/bwp-core/.mcp.json`; repo read access = read access to the DBs. Update tokens are per person and never stored in this repo.
-- Server side: `seo-money-deployments` → `docs/setup-dbhub-tutorial.md` (DNS, DB users, secrets, deploy, rotation).
+- Read tools: `execute_sql_*`, `search_objects_*`, `explain_sql_*` (readonly, 30 s timeout). Update tools: `execute_sql_*_rw`. The `claude_rw` role cannot INSERT, DELETE, TRUNCATE or run DDL.
+- **Read token:** GitHub secret `DBHUB_RO_TOKEN`, rendered by CI into `plugins/bwp-core/.mcp.json`, so repo read access = prod read access. **Update tokens:** one per person, in the deployments secret `DBHUB_RW_AUTH_TOKEN` (comma-separated), never in this repo.
+- Server side (DNS, DB users, secrets, deploy): `seo-money-deployments/docs/setup-dbhub-tutorial.md`.
 
-## Maintain
+**Change and release**
 
 ```bash
-claude plugin validate plugins/bwp-core   # and bwp-rw / seolocal / cade / ranking / .
-claude --plugin-dir plugins/bwp-core --plugin-dir plugins/cade   # live-reload dev; /reload-plugins in-session
+claude --plugin-dir plugins/bwp-core --plugin-dir plugins/cade   # live dev; /reload-plugins in-session
+claude plugin validate plugins/cade                              # each plugin, and `.`
 ```
 
-- Never edit `plugins/bwp-core/.mcp.json` by hand — edit `.mcp.json.tpl`; the **Render bwp-core .mcp.json** workflow commits the rendered file.
-- Ship a change: bump `version` in the plugin's `plugin.json`, push; Claude Code users run `claude plugin update <plugin>@bwp-tools`, Desktop users click **Update** on the marketplace.
-- Rotate the read token: new value in `DBHUB_RO_TOKEN` (here) **and** `DBHUB_AUTH_TOKEN` (deployments env `dbhub-production`) → run **Deploy DBHub** → run **Render bwp-core .mcp.json** → users update.
-
-## Layout
-
-```
-.claude-plugin/marketplace.json
-.github/workflows/render-mcp.yml
-plugins/
-  bwp-core/   .claude-plugin/plugin.json  .mcp.json.tpl  .mcp.json (CI-rendered)
-  bwp-rw/     .claude-plugin/plugin.json  .mcp.json  (userConfig: dbhub_rw_token)
-  seolocal/   .claude-plugin/plugin.json  skills/seolocal-db-queries/
-  cade/       .claude-plugin/plugin.json  skills/*  agents/*  scripts/load_settings.py
-  ranking/    .claude-plugin/plugin.json  skills/ranking-db-queries/
-```
+- Release: bump `version` in the plugin's `plugin.json`, merge to `main`. Users then update (§5).
+- Never hand-edit `plugins/bwp-core/.mcp.json`. Edit `.mcp.json.tpl` and the **Render bwp-core .mcp.json** workflow commits the result.
+- Rotate the read token: set the new value in `DBHUB_RO_TOKEN` (here) **and** `DBHUB_AUTH_TOKEN` (deployments env `dbhub-production`), run **Deploy DBHub**, run **Render bwp-core .mcp.json**, then users update.
+- Revoke someone's update token: remove it from `DBHUB_RW_AUTH_TOKEN`, run **Deploy DBHub**.

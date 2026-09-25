@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -355,10 +356,10 @@ def main() -> int:
     parser.add_argument(
         "--env",
         choices=("prod", "stg", "local"),
-        default="prod",
+        default=os.environ.get("CADE_SKILL_ENV", "prod"),
         help=(
-            "Which `.claude/skills.settings.{env}.json` to load (default: prod). "
-            "Overridable via CADE_SKILL_ENV."
+            "Which `.claude/skills.settings.{env}.json` to load "
+            "(default: $CADE_SKILL_ENV or prod)."
         ),
     )
     parser.add_argument(

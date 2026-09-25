@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "cade",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "CADE content-service skills: read-only prod SQL (cade-db-queries), FastAPI client (cade-api), Celery/Flower control (cade-flower), WordPress reconcile/cleanup, term-merge flow, SEOMoney content probes, plus the cade-task-failure-auditor agent.",
   "author": {
     "name": "rascoder_og"

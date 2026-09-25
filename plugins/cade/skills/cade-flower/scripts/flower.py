@@ -22,6 +22,7 @@ import argparse
 import ast
 import base64
 import json
+import os
 import sys
 import urllib.error
 import urllib.parse
@@ -547,10 +548,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--env",
         choices=("prod", "stg", "local"),
-        default="prod",
+        default=os.environ.get("CADE_SKILL_ENV", "prod"),
         help=(
             "Which `.claude/skills.settings.{env}.json` file to load credentials "
-            "from (default: prod). Overridable via CADE_SKILL_ENV."
+            "from (default: $CADE_SKILL_ENV or prod)."
         ),
     )
 

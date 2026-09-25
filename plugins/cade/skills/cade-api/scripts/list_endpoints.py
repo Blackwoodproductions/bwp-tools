@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -89,7 +90,7 @@ def main() -> int:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--env", choices=("prod", "stg", "local"), default="prod")
+    parser.add_argument("--env", choices=("prod", "stg", "local"), default=os.environ.get("CADE_SKILL_ENV", "prod"))
     parser.add_argument("--filter", help="Substring match on path (case-insensitive).")
     parser.add_argument("--method", help="Filter to one HTTP method (GET/POST/PUT/...).")
     parser.add_argument(

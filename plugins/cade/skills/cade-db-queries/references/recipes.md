@@ -791,7 +791,7 @@ LIMIT 50;
 ## Tips when adapting these
 
 - **Copy a recipe, then narrow the WHERE clause.** Recipes aim for "show me the shape"; real investigations need specific identifiers.
-- **Add an `EXPLAIN`** in front of any cross-table query you haven't run before. Use the `--explain` flag of `prod_query.py`.
+- **Add an `EXPLAIN`** in front of any cross-table query you haven't run before. Use the `explain_sql_cade` MCP tool.
 - **Replace `'<uuid>'` placeholders with actual values** before running — `WHERE id = '<uuid>'` will return zero rows but won't error.
 - **Status / enum literal values** (`'COMPLETED'`, `'FAILED'`, `'in_progress'`, `'verified'`, etc.) may differ from what's literal here — confirm with `SELECT unnest(enum_range(NULL::<enum_type>));` or grep `app/constants/`.
 - **Don't run a join across two large tables without a `WHERE` on an indexed column.** The `EXPLAIN` will show a nested-loop or sequential scan — that's your signal to add a filter.
