@@ -23,7 +23,7 @@ key in .claude/skills.settings.{env}.json. Any explicitly passed value wins.
 
 MUST run under the repo venv (needs curl_cffi + cryptography):
   venv/bin/python <skill-dir>/scripts/reconcile_wp.py \
-    --domain theposbrokers.com
+    --domain client-a.com
 """
 from __future__ import annotations
 
@@ -599,8 +599,8 @@ def selftest():
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--domain", help="CADE domain (domains.domain), e.g. theposbrokers.com")
-    ap.add_argument("--site-url", help="WordPress base URL, e.g. https://theposbrokers.com")
+    ap.add_argument("--domain", help="CADE domain (domains.domain), e.g. client-a.com")
+    ap.add_argument("--site-url", help="WordPress base URL, e.g. https://client-a.com")
     ap.add_argument("--user", help="WordPress username for the application password")
     ap.add_argument("--app-password", help="WP application password (prefer WP_APP_PASSWORD env)")
     ap.add_argument("--env", choices=("prod", "stg", "local"), default=os.environ.get("CADE_SKILL_ENV", "prod"),

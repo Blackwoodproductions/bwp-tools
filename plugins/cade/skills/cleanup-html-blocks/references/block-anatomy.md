@@ -6,7 +6,7 @@ hand-authoring a replacement block.
 ## The targeting rule, and why
 
 CADE posts carry **1–8 `wp:html` blocks**. Only one of them holds `<style>`; the rest
-are content. Verified on poweredwheelchairs.medequipped.com (48 posts, 2026-07-23): the
+are content. Verified on shop.client-d.com (48 posts, 2026-07-23): the
 style block was the **last** `wp:html`, never reliably the first, and 37/48 posts had a
 *table* as their first `wp:html`. A "replace the first `wp:html` block" script would
 have destroyed 37 tables.
@@ -123,13 +123,13 @@ paragraph while preserving the block comments. The regex still matches the enclo
 
 ## The de-tagged block — CSS as visible page text
 
-A worse form of the same round-trip, found on triumphroofs.com (2026-08-04, 48 of 171
+A worse form of the same round-trip, found on client-c.com (2026-08-04, 48 of 171
 posts): WordPress ate the `<style>` **element** and kept only its text, wrapped in a
 `<p>`. The block comments survive:
 
 ```html
 <!-- wp:html -->
-<p>.wp-block-read-more { font-weight: 500; } .triumphroofs-cade-td { padding:0.75rem 1rem; } …</p>
+<p>.wp-block-read-more { font-weight: 500; } .client-c-cade-td { padding:0.75rem 1rem; } …</p>
 <!-- /wp:html -->
 ```
 

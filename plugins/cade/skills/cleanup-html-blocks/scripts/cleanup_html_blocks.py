@@ -42,7 +42,7 @@ DEFAULT_OUT = "misc/wp-scripts/backups"
 # ponytail: regex on block comments, not a Gutenberg parser — wp:html blocks don't nest.
 BLOCK_RE = re.compile(r"<!--\s*wp:html\s*-->.*?<!--\s*/wp:html\s*-->", re.DOTALL)
 
-# Second mutation seen live (triumphroofs.com, 2026-08-04): WP ate the <style>
+# Second mutation seen live (client-c.com, 2026-08-04): WP ate the <style>
 # ELEMENT and left its CSS as body text in a <p>, keeping the block comments. The
 # CSS then renders as visible page text, and there is no "<style" left to match on.
 # Detected structurally: a block whose only tags are p/br and whose text is CSS rules.
@@ -149,10 +149,10 @@ def selftest() -> None:
     same, old = clean_style_block(no_style)
     assert old is None and same == no_style
 
-    # --- de-tagged block: WP ate <style>, left the CSS as <p> text (triumphroofs 1410) ---
+    # --- de-tagged block: WP ate <style>, left the CSS as <p> text (client-c post 1410) ---
     detagged = (
         "<!-- wp:html -->\n<p>.wp-block-read-more { font-weight: 500; text-decoration: none; } "
-        ".triumphroofs-cade-td { padding:0.75rem 1rem; color:#fbd022; } "
+        ".client-c-cade-td { padding:0.75rem 1rem; color:#fbd022; } "
         "@media (max-width: 768px) { .x { display: block; } .toc &gt; div { margin-bottom: 0.25rem !important; } }</p>\n"
         "<!-- /wp:html -->"
     )
