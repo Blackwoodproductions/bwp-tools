@@ -9,7 +9,7 @@
     {
       "name": "bwp-core",
       "source": "./plugins/bwp-core",
-      "description": "Shared MCP connectors: hosted DBHub (read-only SQL over CADE Postgres + bwp_seo/bwp_ranking_service MariaDB) and Logfire. No setup."
+      "description": "Shared MCP connectors: hosted DBHub (read-only SQL over CADE Postgres + bwp_seo/bwp_ranking_service MariaDB) and Logfire. Sign in with your company Google account."
     },
     {
       "name": "bwp-rw",

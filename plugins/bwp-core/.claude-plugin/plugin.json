@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "bwp-core",
-  "version": "1.0.0",
-  "description": "Shared Blackwood Productions MCP connectors: DBHub (hosted, read-only SQL over CADE Postgres, bwp_seo and bwp_ranking_service) and Pydantic Logfire. Required by the seolocal, cade and ranking plugins. No configuration needed.",
+  "version": "1.1.0",
+  "description": "Shared Blackwood Productions MCP connectors: DBHub (hosted, read-only SQL over CADE Postgres, bwp_seo and bwp_ranking_service) and Pydantic Logfire. Required by the seolocal, cade and ranking plugins. DBHub asks you to sign in with your company Google account once.",
   "author": { "name": "rascoder_og" },
   "keywords": ["mcp", "database", "postgres", "mariadb", "logfire"]
 }

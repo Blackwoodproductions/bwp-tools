@@ -2,10 +2,7 @@
   "mcpServers": {
     "dbhub": {
       "type": "http",
-      "url": "https://dbhub.imagehosting.space/mcp",
-      "headers": {
-        "Authorization": "Bearer 87cf306e51346b3d469dd6451bc9f93298db48a596d8fd007249e1040f8aa54b"
-      }
+      "url": "https://dbhub.imagehosting.space/mcp"
     },
     "logfire": {
       "type": "http",

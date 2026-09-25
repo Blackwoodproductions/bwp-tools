@@ -1,6 +1,6 @@
 # bwp-tools
 
-Blackwood Productions' Claude plugins. This private repo **is** the marketplace (`.claude-plugin/marketplace.json`).
+Blackwood Productions' Claude plugins. This public repo **is** the marketplace (`.claude-plugin/marketplace.json`). It holds no secrets: prod data sits behind a company Google sign-in.
 
 | Plugin | Gives you | Install it if you work on |
 |---|---|---|
@@ -14,8 +14,6 @@ Skills are namespaced by plugin: `/cade:cade-api`, `/seolocal:seolocal-db-querie
 
 ## 1. Install (Claude Code)
 
-You need read access to this GitHub repo.
-
 ```bash
 claude plugin marketplace add Blackwoodproductions/bwp-tools
 
@@ -25,9 +23,9 @@ cd seolocal-app     && claude plugin install seolocal@bwp-tools --scope local
 cd ranking-service  && claude plugin install ranking@bwp-tools  --scope local
 ```
 
-`--scope local` enables the plugin for that repo only (written to its gitignored `.claude/settings.local.json`). Start Claude in the repo, or run `/reload-plugins` in an open session. Sign in to Logfire when prompted.
+`--scope local` enables the plugin for that repo only (written to its gitignored `.claude/settings.local.json`). Start Claude in the repo, or run `/reload-plugins` in an open session.
 
-That's it for the `*-db-queries` skills and Logfire: the read-only DB token ships inside `bwp-core`.
+Then sign in once: `/mcp` → `plugin:bwp-core:dbhub` → **Authenticate** with your **@blackwoodproductions.com** Google account (other accounts are refused), and do the same for Logfire. That's it for the `*-db-queries` skills and Logfire.
 
 ## 2. Extra setup for the cade script skills
 
@@ -69,7 +67,7 @@ To change or clear the token: `/plugin` → **Installed** → `bwp-rw` → **Con
 
 ## 4. Claude Desktop / Cowork
 
-Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tools` → install `cade`, `seolocal` or `ranking`. You need read access to this repo and a paid plan.
+Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tools` → install `cade`, `seolocal` or `ranking`. You need a paid plan, not a GitHub account. When the DBHub connector asks, sign in with your **@blackwoodproductions.com** Google account.
 
 | | Claude Code / Desktop *Code* tab | Desktop chat / Cowork |
 |---|---|---|
@@ -95,12 +93,12 @@ Desktop: click **Update** on the marketplace.
 
 ```
 you ── HTTPS ──▶ dbhub.imagehosting.space   (caddy-edge, seo-money-deployments)
-   bwp-core   /mcp     ─▶ dbhub     readonly tools, DB user claude_readonly (SELECT)
+   bwp-core   /mcp     ─▶ pomerium (Google sign-in) ─▶ dbhub   readonly tools, DB user claude_readonly (SELECT)
    bwp-rw     /rw/mcp  ─▶ dbhub-rw  execute_sql_*_rw, DB user claude_rw (SELECT, UPDATE)
 ```
 
 - Read tools: `execute_sql_*`, `search_objects_*`, `explain_sql_*` (readonly, 30 s timeout). Update tools: `execute_sql_*_rw`. The `claude_rw` role cannot INSERT, DELETE, TRUNCATE or run DDL.
-- **Read token:** GitHub secret `DBHUB_RO_TOKEN`, rendered by CI into `plugins/bwp-core/.mcp.json`, so repo read access = prod read access. **Update tokens:** one per person, in the deployments secret `DBHUB_RW_AUTH_TOKEN` (comma-separated), never in this repo.
+- **Read access:** OAuth through Pomerium in front of DBHub. Only `@blackwoodproductions.com` Google accounts get in, so suspending someone in Workspace revokes them. DBHub's own read token is known only to Pomerium, never to this repo. **Update tokens:** one per person, in the deployments secret `DBHUB_RW_AUTH_TOKEN` (comma-separated), never in this repo.
 - Server side (DNS, DB users, secrets, deploy): `seo-money-deployments/docs/setup-dbhub-tutorial.md`.
 
 **Change and release**
@@ -111,6 +109,6 @@ claude plugin validate plugins/cade                              # each plugin, 
 ```
 
 - Release: bump `version` in the plugin's `plugin.json`, merge to `main`. Users then update (§5).
-- Never hand-edit `plugins/bwp-core/.mcp.json`. Edit `.mcp.json.tpl` and the **Render bwp-core .mcp.json** workflow commits the result.
-- Rotate the read token: set the new value in `DBHUB_RO_TOKEN` (here) **and** `DBHUB_AUTH_TOKEN` (deployments env `dbhub-production`), run **Deploy DBHub**, run **Render bwp-core .mcp.json**, then users update.
+- Never commit a secret: this repo is public. Rotate the read token: change `DBHUB_AUTH_TOKEN` (deployments env `dbhub-production`) and run **Deploy DBHub**. Nothing changes here.
 - Revoke someone's update token: remove it from `DBHUB_RW_AUTH_TOKEN`, run **Deploy DBHub**.
+- Push access without a GitHub seat: add the person's SSH key as a **read-write deploy key** (Settings → Deploy keys) and delete it to revoke. `main` is protected, so changes land through PRs.
