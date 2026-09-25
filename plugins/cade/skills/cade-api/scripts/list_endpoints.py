@@ -1,6 +1,6 @@
 """Enumerate CADE API endpoints from the live OpenAPI spec.
 
-Fetches `/v1/openapi.json` from the target env (cached under
+Fetches `/api/v1/openapi.json` from the target env (cached under
 `<skill-dir>/.cache/openapi-{env}.json`), then prints a
 table of `METHOD  PATH  summary`. Filters narrow the output.
 
@@ -10,7 +10,7 @@ Usage:
     python list_endpoints.py --method POST
     python list_endpoints.py --env stg
     python list_endpoints.py --refresh          # bust the cache
-    python list_endpoints.py --json /keywords   # dump raw OpenAPI for one path
+    python list_endpoints.py --json '/api/v1/domains/{domain}/keywords'   # dump raw OpenAPI for one path
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ DEFAULT_BASE_URLS: dict[str, str] = {
     "local": "http://localhost:8000",
 }
 
-OPENAPI_PATH = "/v1/openapi.json"
+OPENAPI_PATH = "/api/v1/openapi.json"
 CACHE_DIR = Path(__file__).resolve().parent.parent / ".cache"
 
 # OpenAPI reserves these keys at the path-item level — everything else is a

@@ -15,14 +15,14 @@ The gating is client-side discipline: the API itself can't tell you're
 being careful, this script can. That's the point.
 
 Usage:
-    python call_api.py GET /keywords/domain/example.com
-    python call_api.py GET /keywords/domain/example.com --query '{"status":"unused"}'
-    python call_api.py POST /keywords --body '{"domain":"..."}' --confirm
-    python call_api.py POST /publication/schedule --body-file payload.json --confirm
+    python call_api.py GET /domains/example.com/keywords
+    python call_api.py GET /domains/example.com/keywords --query '{"status":"unused"}'
+    python call_api.py POST /domains/example.com/keywords --body '{...}' --confirm
+    python call_api.py POST /articles/publications/bulk --body-file payload.json --confirm
     python call_api.py DELETE /keywords/<id> --confirm --destructive
-    python call_api.py POST /subscription/activate --body '{...}' --confirm  # auto-uses plugin key
-    python call_api.py GET /keywords/domain/example.com --env stg
-    python call_api.py POST /keywords --body '{...}' --dry-run    # shows what would be sent
+    python call_api.py GET /domains/example.com/bron/cutover/verification --timeout 900
+    python call_api.py GET /domains/example.com/keywords --env stg
+    python call_api.py POST /domains/example.com/keywords --body '{...}' --dry-run
 """
 
 from __future__ import annotations
@@ -54,8 +54,6 @@ DEFAULT_BASE_URLS: dict[str, str] = {
 }
 
 API_PREFIX = "/api/v1"
-PLUGIN_AUTH_PATH_PREFIXES: tuple[str, ...] = ("/subscription",)
-DEFAULT_TIMEOUT_S = 60
 
 # Run logs live outside the skill folder, per the skill's public contract.
 # Anyone can grep .claude/cade-api-run/ to audit what was called.
@@ -80,20 +78,15 @@ def _normalize_path(path: str) -> str:
     return f"{API_PREFIX}{path}"
 
 
-def _resolve_auth(path: str, explicit: str | None) -> str:
+def _resolve_auth(explicit: str | None) -> str:
     """Decide which API key to attach: 'api' or 'plugin'.
 
-    Subscription endpoints are gated by the WordPress plugin key
-    (`X-WordPress-Plugin-Key`); everything else uses the regular
-    `X-API-Key`. The caller can override with `--auth plugin|api` for
-    edge cases, or when we're wrong.
+    Every route accepts `X-API-Key` — the plugin-key dependencies
+    (subscription, publication-sync) take it too — so it's the default.
+    `--auth plugin` sends `X-WordPress-Plugin-Key` instead, for testing
+    the plugin-side path.
     """
-    if explicit in ("api", "plugin"):
-        return explicit
-    suffix = path[len(API_PREFIX):]
-    if any(suffix.startswith(prefix) for prefix in PLUGIN_AUTH_PATH_PREFIXES):
-        return "plugin"
-    return "api"
+    return explicit or "api"
 
 
 def _resolve_base_url(settings: dict[str, Any], env: str) -> str:
@@ -143,7 +136,7 @@ def _check_gating(method: str, *, confirm: bool, destructive: bool) -> None:
 
 
 def _do_call(
-    req: urlrequest.Request, timeout: int
+    req: urlrequest.Request, timeout: float | None
 ) -> tuple[int | None, Any, dict[str, str], int | None, str | None]:
     """Issue the request, classify the response.
 
@@ -237,7 +230,7 @@ def run(
     auth: str | None,
     confirm: bool,
     destructive: bool,
-    timeout: int,
+    timeout: float | None,
     dry_run: bool,
 ) -> int:
     method = method.upper()
@@ -251,7 +244,7 @@ def run(
 
     settings = load_settings(env=env)
     base_url = _resolve_base_url(settings, env)
-    which_auth = _resolve_auth(path, auth)
+    which_auth = _resolve_auth(auth)
     key = _require_key(settings, which_auth)
 
     query_str = "?" + urlencode(query, doseq=True) if query else ""
@@ -273,6 +266,7 @@ def run(
         "base_url": base_url,
         "auth": which_auth,
         "headers": _mask_headers(headers),
+        "timeout_s": timeout,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -348,7 +342,7 @@ def main() -> int:
     parser.add_argument(
         "path",
         help=(
-            "Endpoint path, e.g. `/keywords/domain/example.com`. "
+            "Endpoint path, e.g. `/domains/example.com/keywords`. "
             "Leading `/api/v1` is optional — it's added for you."
         ),
     )
@@ -384,9 +378,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--timeout",
-        type=int,
-        default=DEFAULT_TIMEOUT_S,
-        help=f"Request timeout in seconds (default: {DEFAULT_TIMEOUT_S}).",
+        type=float,
+        default=None,
+        help=(
+            "Seconds to wait for a response. Omit to wait until the server "
+            "responds — the caller decides how long a call may take."
+        ),
     )
     parser.add_argument(
         "--dry-run",
