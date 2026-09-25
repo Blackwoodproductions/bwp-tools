@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import Counter
@@ -154,8 +155,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--env",
         choices=("prod", "stg", "local"),
-        default="prod",
-        help="Credentials env (default: prod).",
+        default=os.environ.get("CADE_SKILL_ENV", "prod"),
+        help="Credentials env (default: $CADE_SKILL_ENV or prod).",
     )
     p.add_argument(
         "--out",

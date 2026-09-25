@@ -28,6 +28,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -120,8 +121,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         nargs="*",
         help='Domains, comma- or space-separated: "a.com,b.com" or a.com b.com',
     )
-    p.add_argument("--env", choices=("prod", "stg", "local"), default="prod",
-                   help="Credentials env (default: prod).")
+    p.add_argument("--env", choices=("prod", "stg", "local"), default=os.environ.get("CADE_SKILL_ENV", "prod"),
+                   help="Credentials env (default: $CADE_SKILL_ENV or prod).")
     p.add_argument("--db", default=None,
                    help="Database name override (default: the env's db-default).")
     p.add_argument("--timeout-ms", type=int, default=DEFAULT_TIMEOUT_MS,

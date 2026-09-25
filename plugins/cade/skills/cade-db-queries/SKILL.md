@@ -17,7 +17,7 @@ Read-only SQL access to the CADE production Postgres. One job, done safely.
 
 ## Environment selection
 
-**The MCP connection is prod only.** If the user says "staging" / "stg" / "local" / "dev", do **not** run it against the `cade` source. Use the repo-local wrapper if the checkout still has it (`python <skill-dir>/scripts/prod_query.py --env stg "..."` reads `.claude/skills.settings.stg.json`); otherwise tell the user non-prod isn't wired.
+**The MCP connection is prod only.** If the user says "staging" / "stg" / "local" / "dev", do **not** run it against the `cade` source — tell the user non-prod isn't wired to this skill.
 
 ## When to use
 
@@ -42,23 +42,9 @@ Four layers. Any single layer being bypassed leaves the others standing:
 
 If a call is rejected, that's the guardrail doing its job — rephrase, don't try to bypass. Caveat: a read-only transaction does not constrain privileged-role *functions* (`pg_read_file`, `lo_export`, `dblink`, `COPY ... TO PROGRAM`) — which is why layer 1 matters.
 
-### First-time setup (operator)
+### Server side (operator)
 
-Roles live server-side: the read path uses `claude_readonly`, the update path `claude_rw` (`SELECT, UPDATE` only). Their DSNs are the `DBHUB_CADE_RO_DSN` / `DBHUB_CADE_RW_DSN` secrets in `seo-money-deployments` (see `docs/setup-dbhub-tutorial.md` there). Create the read role with:
-
-```sql
-CREATE ROLE claude_readonly LOGIN PASSWORD '<strong-random>';
-GRANT CONNECT ON DATABASE "seo-acg" TO claude_readonly;
-GRANT USAGE ON SCHEMA public, cade_scheduling TO claude_readonly;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO claude_readonly;
-GRANT SELECT ON ALL TABLES IN SCHEMA cade_scheduling TO claude_readonly;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT SELECT ON TABLES TO claude_readonly;
-ALTER DEFAULT PRIVILEGES IN SCHEMA cade_scheduling
-  GRANT SELECT ON TABLES TO claude_readonly;
-```
-
-Add `claude_rw` the same way with `GRANT SELECT, UPDATE` instead of `GRANT SELECT` — nothing else, so INSERT/DELETE/TRUNCATE/DDL stay impossible.
+The `claude_readonly` / `claude_rw` DB users, their secrets and the DBHub deploy live in `seo-money-deployments` — see `docs/setup-dbhub-tutorial.md` there.
 
 ## How to query
 

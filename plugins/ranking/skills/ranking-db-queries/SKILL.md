@@ -26,7 +26,7 @@ Two databases on the same production MariaDB server; the `ranking` source defaul
 
 ## Environment selection
 
-**The MCP connection is prod only.** If the user says "staging" / "stg" / "local" / "dev", do **not** run it against the `ranking` source. Use the repo-local wrapper if the checkout still has it (`python .claude/skills/ranking-db-queries/scripts/prod_query.py --env stg "..."`); otherwise tell the user non-prod isn't wired.
+**The MCP connection is prod only.** If the user says "staging" / "stg" / "local" / "dev", do **not** run it against the `ranking` source — tell the user non-prod isn't wired to this skill.
 
 ## When to use
 
@@ -52,18 +52,9 @@ Four layers. Any single layer being bypassed leaves the others standing:
 
 If a call is rejected, that's the guardrail doing its job — rephrase, don't try to bypass.
 
-### First-time setup (operator)
+### Server side (operator)
 
-Users live server-side: the read path uses `claude_readonly`, the update path `claude_rw` (`SELECT, UPDATE` only). Their URLs are the `DBHUB_MARIADB_RO_URL` / `DBHUB_MARIADB_RW_URL` secrets in `seo-money-deployments` (see `docs/setup-dbhub-tutorial.md` there). Create the read user with:
-
-```sql
-CREATE USER 'claude_readonly'@'%' IDENTIFIED BY '<strong-random>';
-GRANT SELECT ON bwp_ranking_service.* TO 'claude_readonly'@'%';
-GRANT SELECT ON bwp_seo.* TO 'claude_readonly'@'%';
-FLUSH PRIVILEGES;
-```
-
-Add `claude_rw` the same way with `GRANT SELECT, UPDATE` instead of `GRANT SELECT` — nothing else, so INSERT/DELETE/TRUNCATE/DDL stay impossible.
+The `claude_readonly` / `claude_rw` DB users, their secrets and the DBHub deploy live in `seo-money-deployments` — see `docs/setup-dbhub-tutorial.md` there.
 
 ## How to query
 

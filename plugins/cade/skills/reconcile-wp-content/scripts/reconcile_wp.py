@@ -603,8 +603,8 @@ def main():
     ap.add_argument("--site-url", help="WordPress base URL, e.g. https://theposbrokers.com")
     ap.add_argument("--user", help="WordPress username for the application password")
     ap.add_argument("--app-password", help="WP application password (prefer WP_APP_PASSWORD env)")
-    ap.add_argument("--env", choices=("prod", "stg", "local"), default="prod",
-                    help="DB creds source: .claude/skills.settings.{env}.json (default prod)")
+    ap.add_argument("--env", choices=("prod", "stg", "local"), default=os.environ.get("CADE_SKILL_ENV", "prod"),
+                    help="DB creds source: .claude/skills.settings.{env}.json (default: $CADE_SKILL_ENV or prod)")
     ap.add_argument("--post-types", default="content,faq", help="which types to check (default content,faq)")
     ap.add_argument("--proxy-url", help="override proxy (default: CRAWLER_PROXY_URLS from .env)")
     ap.add_argument("--no-proxy", action="store_true", help="disable proxy fallback (direct only)")

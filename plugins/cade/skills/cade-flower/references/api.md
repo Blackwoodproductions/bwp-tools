@@ -2,7 +2,7 @@
 
 Source of truth: `flower/urls.py`, `flower/api/tasks.py`, `flower/api/workers.py`, `flower/api/control.py`, `flower/views/monitor.py` (github.com/mher/flower). This file is the skill's institutional memory of those route handlers; if Flower adds or renames endpoints, refresh this file first.
 
-All endpoints require **HTTP Basic Auth** (`--basic_auth` on the Flower server). Unauthenticated callers get `401`. In CADE prod, basic auth is configured and the creds live under `cade-flower` in `skills.settings.local.json`.
+All endpoints require **HTTP Basic Auth** (`--basic_auth` on the Flower server). Unauthenticated callers get `401`. In CADE prod, basic auth is configured and the creds live under `cade-flower` in `.claude/skills.settings.{env}.json`.
 
 Every `POST` endpoint below mutates state. `flower.py` gates them behind `--confirm` (and `--destructive` for worker shutdown).
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "ranking",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ranking service skills: read-only SQL over bwp_ranking_service (and bwp_seo) via the bwp-core DBHub server.",
   "author": {
     "name": "rascoder_og"

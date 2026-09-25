@@ -1048,8 +1048,8 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     def add_env(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--env", default="production",
-                       help="production (default) | staging | local")
+        p.add_argument("--env", default=os.environ.get("CADE_SKILL_ENV", "production"),
+                       help="production | staging | local (default: $CADE_SKILL_ENV or production)")
 
     p_check = subparsers.add_parser("check", help="find domains + write plans")
     add_env(p_check)
