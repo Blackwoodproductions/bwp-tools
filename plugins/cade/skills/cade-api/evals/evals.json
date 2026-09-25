@@ -18,8 +18,8 @@
     {
       "id": 3,
       "name": "keyword-list-schema-lookup",
-      "prompt": "Looking at the CADE prod API, what does the response look like for GET /keywords/domain/{domain}? I want to know the schema so I know what fields to expect in the response body — but don't call the endpoint itself, just inspect the schema.",
-      "expected_output": "Uses list_endpoints.py --json /api/v1/keywords/domain/{domain} to dump the OpenAPI operation. Walks the response schema (likely DomainKeywordListResponse) and reports the shape: keywords array, pagination fields (total, page, page_size, total_pages), and the nested keyword item fields (id, keyword, search_intent, status, rejection_reason, supporting_keywords, relevant_questions). Does NOT call the live endpoint. Saves no file under .claude/cade-api-run/.",
+      "prompt": "Looking at the CADE prod API, what does the response look like for GET /domains/{domain}/keywords? I want to know the schema so I know what fields to expect in the response body — but don't call the endpoint itself, just inspect the schema.",
+      "expected_output": "Uses list_endpoints.py --json '/api/v1/domains/{domain}/keywords' to dump the OpenAPI operation. Walks the response schema (likely DomainKeywordListResponse) and reports the shape: keywords array, pagination fields (total, page, per_page, total_pages), and the nested keyword item fields (id, keyword, search_intent, status, rejection_reason, supporting_keywords, relevant_questions). Does NOT call the live endpoint. Saves no file under .claude/cade-api-run/.",
       "files": []
     }
   ]
