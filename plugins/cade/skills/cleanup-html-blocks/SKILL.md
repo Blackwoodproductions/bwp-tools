@@ -47,7 +47,7 @@ site this ran against.
 
 Two shapes match: a block containing `<style`, and one WordPress has **de-tagged** —
 the `<style>` element eaten, its CSS left as `<p>` body text, so it renders as visible
-text on the page (48/171 posts on triumphroofs.com, 2026-08-04). The second is matched
+text on the page (48/171 posts on client-c.com, 2026-08-04). The second is matched
 structurally: only `p`/`br` tags, 2+ CSS rules. A sweep that predates this reports
 those as `no_block`, which reads as clean — re-run to catch them.
 

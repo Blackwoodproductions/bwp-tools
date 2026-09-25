@@ -98,19 +98,19 @@ credentials, the script names exactly which of `--site-url` / `--user` /
 ```bash
 # Dry-run (default): credentials from platform_connections, NO prod writes
 venv/bin/python <skill-dir>/scripts/reconcile_wp.py \
-  --domain theposbrokers.com
+  --domain client-a.com
 
 # Apply to prod (one transaction) — both flags required
 venv/bin/python <skill-dir>/scripts/reconcile_wp.py \
-  --domain theposbrokers.com --apply --confirm
+  --domain client-a.com --apply --confirm
 
 # Override any subset; the rest still comes from the stored connection
 WP_APP_PASSWORD='xxxx xxxx xxxx xxxx xxxx xxxx' \
 venv/bin/python <skill-dir>/scripts/reconcile_wp.py \
-  --domain theposbrokers.com --user admin
+  --domain client-a.com --user admin
 
 # Subdomain WordPress install where the stored site_url is wrong or absent
-... --domain smilofamilydental.ca --site-url https://dentist.smilofamilydental.ca --user admin
+... --domain client-b.ca --site-url https://dentist.client-b.ca --user admin
 ```
 
 ### Flags

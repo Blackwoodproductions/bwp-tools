@@ -14,7 +14,7 @@ done safely and repeatably. Built on the same credentials and read-only contract
 ## When invoked
 
 You are given a **comma- or space-separated list of domains** as the argument (e.g.
-`"yesaba.com,brightercareaba.com"`). Run the bundled script with that list, then relay the
+`"client-e.com,client-f.com"`). Run the bundled script with that list, then relay the
 folder tally and any warnings back to the user:
 
 ```bash
@@ -112,16 +112,16 @@ WordPress, and does not modify any DB row.
 ## Examples
 
 **Example 1 — single domain**
-Input: `/dump-clustered-content "yesaba.com"`
-Result: 16 folders under `misc/clustered/yesaba.com/`, each with the full
+Input: `/dump-clustered-content "client-e.com"`
+Result: 16 folders under `misc/clustered/client-e.com/`, each with the full
 `{metadata.json, feedtext.html, data.html}` triple.
 
 **Example 2 — multiple domains, comma-separated**
-Input: `/dump-clustered-content "macraesfarmandranch.ca,brightercareaba.com"`
+Input: `/dump-clustered-content "client-g.ca,client-f.com"`
 Result: 10 + 10 folders, no warnings.
 
 **Example 3 — a domain that mixes local pages and cluster articles**
-Input: `/dump-clustered-content "recoverywaysidaho.com"`
+Input: `/dump-clustered-content "client-h.com"`
 Result: 8 folders — only the cluster articles. The domain's ~80 `local_guide` pages are
 single-keyword content and are excluded. Add `--all-types` to dump those too.
 
