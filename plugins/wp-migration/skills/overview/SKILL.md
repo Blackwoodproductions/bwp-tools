@@ -20,7 +20,7 @@ description: Show the state of every Premium SEO → CADE site migration in flig
 | `last_error` set | Explain it using `wp-migration:site` → `references/codes.md`; the fix is usually "fix X, then re-run `<stage>`". |
 | `stage` NULL | First detect was blocked (see last_error); fix the blocker and run `detect` again. |
 | `stage = detect` | Run `prepare` (writes to the live site). |
-| `stage = prepare` | Human: switch Premium SEO **off** in wp-admin → Plugins (skip if detected_state is A or B), then run `remove`. |
+| `stage = prepare` | Human: switch Premium SEO **off** in wp-admin → Plugins (skip if detected_state is A or B), then run `remove` (writes to the live site: deletes leftover pages). |
 | `stage = remove` | Human: click **Reconnect** in the dashboard for this site (the crawl), then run `finish`. |
 | `verify_running_since` set and < 15 min old | Verification running; wait. |
 | `stage = finish`, `verified_at` NULL or `verify_failed > 0` | Run `wp-migration:verification`. |
