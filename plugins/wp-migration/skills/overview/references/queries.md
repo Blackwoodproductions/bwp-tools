@@ -13,10 +13,11 @@ WHERE c.stage IS DISTINCT FROM 'rolled_back'
   AND (c.stage IS DISTINCT FROM 'finish' OR c.stage_at > now() - interval '14 days')
 ORDER BY c.started_by NULLS LAST, c.stage_at DESC NULLS LAST;
 ```
-Filter to one operator with `AND c.started_by = '<email>'`.
+Filter to one operator with `AND c.started_by = '<email>'`, added before the ORDER BY line.
 
 ## Q2 — bwp health (bwp_seo, `execute_sql_seo`)
 ```sql
 SELECT id, status, wp_plugin, script_version FROM bwp_domains WHERE id IN (<bwp_domain_id list from Q1>);
 ```
+Skip Q2 if the list is empty (never `IN ()`).
 Healthy after `finish` = `status = 2 AND wp_plugin = 1`.
