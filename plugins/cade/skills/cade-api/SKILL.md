@@ -1,6 +1,18 @@
 ---
 name: cade-api
-description: Call CADE FastAPI endpoints against prod (default), staging, or local from the repo. Builds request payloads, attaches the right auth header, enforces client-side write gating (reads free, POST/PUT/PATCH require --confirm, DELETE requires --confirm --destructive), and persists every run to `.claude/cade-api-run/[timestamp]-[endpoint].json` as `{"inputs": {...}, "outputs": {...}}`. Use this skill whenever the user asks to hit a CADE endpoint, trigger a task via the API, fire a keywords/content/crawl/publishing request against prod, re-run a past API call, run a BRON cutover stage or check its record, read/retract/delete a publication by keyword, inspect which endpoints exist, or directly invokes "cade-api". Triggers on phrases like "call the API", "hit the /keywords endpoint", "POST to prod", "trigger content generation via the API", "fire the crawler endpoint", "call the publishing endpoint", "hit the domain context endpoint in prod", "what endpoints are available", "list cade endpoints", "replay that API call", "send this payload to the API", "run the endpoint against staging", "check the bron cutover", "verify the cutover", "get the publication by keyword". This is a live production write surface — always honor the gating rather than bypass it. For DB row state use `cade-db-queries`; for live Celery state use `cade-flower`; for telemetry use the `logfire` MCP tools (bwp-core). This skill owns the HTTP surface.
+description: >-
+  Call CADE FastAPI endpoints against prod (default), staging, or local. Builds
+  payloads, attaches the right auth header, gates writes (reads free;
+  POST/PUT/PATCH need --confirm; DELETE needs --confirm --destructive) and saves
+  every run to `.claude/cade-api-run/`. Use whenever the user asks to hit a CADE
+  endpoint, trigger a task via the API, fire a keywords/content/crawl/publishing
+  request, replay a past call, run a BRON cutover stage or check its record,
+  read/retract/delete a publication by keyword, or list endpoints. Triggers:
+  "call the API", "hit the /keywords endpoint", "POST to prod", "trigger content
+  generation via the API", "run the endpoint against staging", "check the bron
+  cutover", "list cade endpoints", "cade-api". Live production write surface —
+  always honor the gating. DB state: cade-db-queries; Celery: cade-flower;
+  telemetry: the logfire MCP tools.
 ---
 
 # cade-api

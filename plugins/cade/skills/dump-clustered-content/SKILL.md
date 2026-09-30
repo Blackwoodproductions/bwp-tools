@@ -1,6 +1,6 @@
 ---
 name: dump-clustered-content
-description: Export each domain's clustered SEOMoney publication pair (feedtext + content body) plus its content metadata from the CADE prod DB into per-keyword folders under misc/clustered/<domain>/<slug>/. Use this skill whenever the user wants to dump, export, extract, or pull the clustered content / SEOMoney feedtext+data for one or more domains — phrases like "dump clustered content for X", "export the clustered files for these domains", "extract the seomoney pairs for a.com,b.com", or the direct invocation "/dump-clustered-content". Takes a comma- or space-separated domain list as its argument. Read-only against the database.
+description: Export each domain's clustered SEOMoney publication pair (feedtext + content body) plus its content metadata from the CADE prod DB into per-keyword folders under misc/clustered/{domain}/{slug}/. Use this skill whenever the user wants to dump, export, extract, or pull the clustered content / SEOMoney feedtext+data for one or more domains — phrases like "dump clustered content for X", "export the clustered files for these domains", "extract the seomoney pairs for a.com,b.com", or the direct invocation "/dump-clustered-content". Takes a comma- or space-separated domain list as its argument. Read-only against the database.
 ---
 
 # dump-clustered-content

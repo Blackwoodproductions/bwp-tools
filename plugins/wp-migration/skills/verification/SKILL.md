@@ -1,6 +1,6 @@
 ---
 name: verification
-description: Run and analyse the post-cutover verification for a migrated site, and say exactly what to do about each failing row. Use for "verify <domain>", "is <domain> done", "why did verification fail", "check the migration of <domain>".
+description: Run and analyse the post-cutover verification for a migrated site, and say exactly what to do about each failing row. Use for "verify {domain}", "is {domain} done", "why did verification fail", "check the migration of {domain}".
 ---
 
 # wp-migration: verification

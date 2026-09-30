@@ -1,6 +1,6 @@
 ---
 name: link-sync
-description: Run a BRON link sync for a migrated site and explain the result. Use for "link sync <domain>", "resync links on <domain>", "links missing on <domain>", or when watch flags a stale link sync. Writes to the live site.
+description: Run a BRON link sync for a migrated site and explain the result. Use for "link sync {domain}", "resync links on {domain}", "links missing on {domain}", or when watch flags a stale link sync. Writes to the live site.
 ---
 
 # wp-migration: link-sync

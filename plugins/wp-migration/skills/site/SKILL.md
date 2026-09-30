@@ -1,6 +1,6 @@
 ---
 name: site
-description: Drive one site through the Premium SEO → CADE migration runbook (plan → detect → prepare → switch Premium SEO off → remove → reconnect crawl → finish → verify), or roll it back. Use for "migrate <domain>", "next step for <domain>", "run prepare on <domain>", "why did <domain> fail", "roll back <domain>", or several domains at once ("kick prepare on a.com, b.com").
+description: Drive one site through the Premium SEO → CADE migration runbook (plan → detect → prepare → switch Premium SEO off → remove → reconnect crawl → finish → verify), or roll it back. Use for "migrate {domain}", "next step for {domain}", "run prepare on {domain}", "why did {domain} fail", "roll back {domain}", or several domains at once ("kick prepare on a.com, b.com").
 ---
 
 # wp-migration: site
