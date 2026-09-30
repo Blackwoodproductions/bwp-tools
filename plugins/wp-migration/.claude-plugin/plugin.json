@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "wp-migration",
   "version": "0.2.1",
   "description": "Premium SEO → CADE site migrations: fleet overview, per-site runbook, verification, link sync and watch period. Actions go through the cade-mcp connector (company Google sign-in), including the seo-service reads and the reconnect crawl.",
