@@ -13,7 +13,7 @@ Read-only SQL access to the SEO Local production MariaDB. One job, done safely.
   - `explain_sql_seo` `{ "sql": "..." }` — returns the plan **without executing** (replaces the old `--explain`).
 - **Schema reference**: `references/schema.md` — pointer at the canonical Prisma schemas plus a curated table summary. Load when you need column-level detail.
 - **Query recipes**: `references/recipes.md` — read-only SELECTs grouped by area (domains, register, resellers, orders, rank tracking). Load when the user's request matches a common pattern — copy a recipe and narrow the `WHERE` rather than starting from scratch.
-- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); its read-only token ships with the plugin, so there is nothing to configure per user or per call.
+- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); access is gated by a one-time company Google sign-in (Pomerium), so there is nothing to configure per call.
 
 ## Database identity
 

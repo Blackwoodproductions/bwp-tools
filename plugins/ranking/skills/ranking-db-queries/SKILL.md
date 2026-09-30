@@ -13,7 +13,7 @@ Read-only SQL access to the Ranking Service production MariaDB. One job, done sa
   - `explain_sql_ranking` `{ "sql": "..." }` — returns the plan **without executing** (replaces the old `--explain`).
 - **Schema reference**: `references/schema.md` — table catalog for `bwp_ranking_service` and the relevant `bwp_seo` tables, verified against live prod. Load when you need column-level detail.
 - **Query recipes**: `references/recipes.md` — read-only SELECTs grouped by area (domains/keywords, pipeline health, failures, costs, scores, auto-queue). Load when the user's request matches a common pattern — copy a recipe and narrow the `WHERE` rather than starting from scratch.
-- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); its read-only token ships with the plugin, so there is nothing to configure per user or per call.
+- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); access is gated by a one-time company Google sign-in (Pomerium), so there is nothing to configure per call.
 
 ## Database identity
 
