@@ -30,6 +30,11 @@
       "name": "ranking",
       "source": "./plugins/ranking",
       "description": "Ranking service skills (ranking-db-queries)"
+    },
+    {
+      "name": "wp-migration",
+      "source": "./plugins/wp-migration",
+      "description": "Premium SEO → CADE site migrations (overview, site, verification, link-sync, watch). Needs bwp-core; sign in with your company Google account."
     }
   ]
 }

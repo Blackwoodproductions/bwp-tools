@@ -13,7 +13,7 @@ Read-only SQL access to the CADE production Postgres. One job, done safely.
   - `explain_sql_cade` `{ "sql": "..." }` — returns the plan **without executing** (replaces the old `--explain`).
 - **Schema reference**: `references/schema.md` — full table-by-table breakdown. Load when you need column-level detail.
 - **Query recipes**: `references/recipes.md` — curated catalog of read-only queries by area (domains, keywords, content, publishing, platform connections, jobs, scheduling, crawl, cross-cutting traces). Load when the user's request matches a common pattern — copy a recipe and narrow the `WHERE` rather than starting from scratch.
-- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); its read-only token ships with the plugin, so there is nothing to configure per user or per call. Search path is `public, cade_scheduling`; qualify other schemas explicitly.
+- **Connection**: the `bwp-core` plugin points at the hosted DBHub gateway (`https://dbhub.imagehosting.space/mcp`); access is gated by a one-time company Google sign-in (Pomerium), so there is nothing to configure per call. Search path is `public, cade_scheduling`; qualify other schemas explicitly.
 
 ## Environment selection
 
