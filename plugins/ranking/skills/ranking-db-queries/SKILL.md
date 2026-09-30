@@ -1,6 +1,16 @@
 ---
 name: ranking-db-queries
-description: Run safe, read-only SQL queries against the Ranking Service production MariaDB (`bwp_ranking_service`, plus the external `bwp_seo` DB the auto-queue reads) through the bwp-core DBHub MCP server. Use this skill whenever the user asks to query the prod ranking database, look up records, check the state of specific rows, count or aggregate data, run ad-hoc SELECTs, audit data, or directly invokes "ranking-db-queries". Triggers on phrases like "query the prod ranking db", "how many reports are PENDING", "show me failed serp tasks", "what's the score history for keyword X", "why wasn't domain X auto-queued", "select from serp_reports", "audit DataForSEO costs", "show me rows where". The schema is owned by the ranking-service repo — `app/models/*.py` + Alembic migrations are the authoritative column reference (external bwp_seo tables: `app/models/external/*.py`). Four-layer read-only safety contract (MariaDB role + READ ONLY transaction + DBHub SQL classifier + timeout). Read-only by construction — never mutates production. For source-code investigation use Read/Grep; this skill is one input to investigations, not their orchestrator.
+description: >-
+  Run safe, read-only SQL against the Ranking Service production MariaDB
+  (`bwp_ranking_service`, plus the external `bwp_seo` DB the auto-queue reads)
+  through the bwp-core DBHub MCP server. Use whenever the user asks to query the
+  prod ranking db, look up or count rows, run ad-hoc SELECTs or audit data: "how
+  many reports are PENDING", "show me failed serp tasks", "score history for
+  keyword X", "why wasn't domain X auto-queued", "select from serp_reports",
+  "audit DataForSEO costs", or "ranking-db-queries". Column reference is the
+  ranking-service repo (`app/models/*.py`; external tables in
+  `app/models/external/`). Four-layer read-only contract (MariaDB role + READ
+  ONLY transaction + DBHub classifier + timeout); never mutates production.
 ---
 
 # ranking-db-queries

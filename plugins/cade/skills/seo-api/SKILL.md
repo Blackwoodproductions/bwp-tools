@@ -1,6 +1,18 @@
 ---
 name: seo-api
-description: Call seo-service (the NestJS API over bwp_seo) from the cade-service repo — prod by default, or local. Same client and gating as cade-api (reads free, POST/PUT/PATCH need --confirm, DELETE needs --confirm --destructive), runs saved to `.claude/seo-api-run/`. Use during Premium SEO → CADE migrations and BRON/SEOMoney work whenever you need what only seo-service knows or writes — bwp domain facts (status, wp_plugin, script version, legitscript, agentic), a domain's link context, the pending bubblefeed content queue, a bubblefeed row's stored article/status, the reconnect crawl, retract/restore a row, fix a row's cut-over url. Triggers on "call seo-service", "hit the seo-service api", "domain facts for <domain>", "link context", "content queue", "bubblefeed row <id>", "reconnect <domain>", "run the crawl for <domain>", "retract keyword <id>", "set the url on keyword <id>", "list seo-service endpoints", or direct invocation "seo-api". This is a live production write surface over the customer-facing bwp data — honor the gating.
+description: >-
+  Call seo-service (the NestJS API over bwp_seo) from the cade-service repo,
+  prod by default or local. Same client and gating as cade-api (reads free;
+  POST/PUT/PATCH need --confirm; DELETE needs --confirm --destructive); runs
+  saved to `.claude/seo-api-run/`. Use in Premium SEO → CADE migrations and
+  BRON/SEOMoney work for what only seo-service knows or writes: bwp domain
+  facts, link context, the bubblefeed content queue, a bubblefeed row's
+  article/status, the reconnect crawl, retract/restore a row, fix a row's cut-
+  over url. Triggers: "call seo-service", "domain facts for {domain}", "link
+  context", "content queue", "bubblefeed row {id}", "reconnect {domain}",
+  "retract keyword {id}", "set the url on keyword {id}", "list seo-service
+  endpoints", "seo-api". Live production write surface over customer-facing bwp
+  data — honor the gating.
 ---
 
 # seo-api

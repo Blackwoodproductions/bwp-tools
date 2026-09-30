@@ -1,20 +1,17 @@
 ---
 name: cleanup-html-blocks
 description: >-
-  Clean the injected CSS `<!-- wp:html --><style>…</style><!-- /wp:html -->` block
-  out of published WordPress content — both articles (`/wp/v2/posts`) and the
-  `cade_faq` CPT (`/wp/v2/faqs`) — using an authenticated WordPress application
-  password so it edits the raw Gutenberg markup. Strips the block by default;
-  replaces it when given `--html-block`, which is how a new CADE style block is
-  rolled out across already-published posts. Use this skill whenever the user
-  wants to remove, clean, strip, or swap the style/CSS block from WP posts or
-  FAQs, says "cleanup the html blocks", "strip the style block from the posts",
-  "the old CSS is still on the published articles", "roll out the new style
-  block", "remove the wp:html style block from the faqs", or invokes
-  "cleanup-html-blocks" directly. Takes site-url + user + application password.
-  Reaches WordPress the way CADE does (curl_cffi impersonation +
-  CRAWLER_PROXY_URLS proxy fallback). Dry-run by default and backs up every block
-  it touches; only `--apply` writes to the live site.
+  Strip or replace the injected CSS style block (a wp:html Gutenberg block
+  wrapping a style tag) in published WordPress articles (/wp/v2/posts) and
+  cade_faq FAQs (/wp/v2/faqs), editing raw markup with an application password.
+  Strips by default; `--html-block` swaps in a new CADE style block across
+  already-published posts. Use when the user wants to remove, strip or swap the
+  style/CSS block: "cleanup the html blocks", "strip the style block from the
+  posts", "the old CSS is still on the published articles", "roll out the new
+  style block", or "cleanup-html-blocks". Takes site-url + user + application
+  password. Reaches WordPress the way CADE does (curl_cffi + proxy fallback).
+  Dry-run by default and backs up every block it touches; only `--apply` writes
+  to the live site.
 ---
 
 # cleanup-html-blocks

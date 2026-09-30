@@ -1,22 +1,16 @@
 ---
 name: reconcile-wp-content
 description: >-
-  Reconcile a single domain's CADE content_publications (status + platform_url)
-  AND the crawl pages.url against the LIVE WordPress site, using an authenticated
-  WordPress application password so it reads each post's exact status
-  (publish/draft/pending/private/future/trash) and real permalink. Use this
-  skill whenever the user says the DB status or platform_url doesn't match the
-  real site, wants to fix/sync content_publications with WordPress, asks to
-  "reconcile wp content", "fix the platform_url mismatches", "the posts are
-  published on WP but the db says draft", "update the db to match the live
-  site", "check what status these posts actually are on wordpress", or invokes
-  "reconcile-wp-content" directly. Takes just the domain — site-url, user and
-  application password fall back to that domain's default WordPress
-  `platform_connection` (decrypted with the Fernet key in
-  `.claude/skills.settings.{env}.json`) whenever they are not passed
-  explicitly. Reaches WordPress the way CADE does (curl_cffi impersonation +
-  CRAWLER_PROXY_URLS proxy fallback). Read-only by default (writes reconcile SQL
-  + a JSON report); only `--apply --confirm` writes to the prod DB.
+  Reconcile one domain's CADE content_publications (status + platform_url) and
+  crawl pages.url against the LIVE WordPress site, reading each post's exact
+  status and permalink with an application password. Use when the DB status or
+  platform_url doesn't match the real site: "reconcile wp content", "fix the
+  platform_url mismatches", "published on WP but the db says draft", "update the
+  db to match the live site", "check what status these posts actually are on
+  wordpress", or "reconcile-wp-content". Takes just the domain; credentials fall
+  back to its default WordPress platform_connection. Reaches WordPress the way
+  CADE does (curl_cffi + proxy fallback). Read-only by default (writes reconcile
+  SQL + a JSON report); only `--apply --confirm` writes to the prod DB.
 ---
 
 # reconcile-wp-content

@@ -1,6 +1,19 @@
 ---
 name: cade-terms
-description: "WordPress duplicate category/tag cleanup for CADE domains — the term-merge flow. CHECK: scan term_merge_candidates for domains with proposed duplicate-term pairs (max 5 domains per run) and write an editable, reviewable plan.md per domain (idempotent; read-only apart from the plan files). MERGE: apply reviewed plans to the LIVE WP site — merge losers into winners, delete losers, rewrite stored content metadata, close candidates (applied → merged, plan-omitted → rejected, sticky). Also AUTO (apply only no-judgment groups) and VERIFY (assert an applied run landed). Environment-aware — defaults to --env production; outside local, merge requires --confirm. Use whenever the user asks to check for merge requests/candidates, see what term merges are waiting, scan for duplicate categories/tags, generate merge plans, apply/execute/approve a merge plan, merge the duplicates for a domain, auto-merge the safe groups, verify a merge, or invokes 'cade-terms'. Triggers on: 'check for term merges', 'any merge requests?', 'scan for duplicate terms', 'generate merge plans', 'apply the merge plan', 'run the merge', 'approve the term merges', 'merge the duplicates for <domain>', 'auto-merge the safe groups', 'verify the merge landed'. NEVER apply a plan the user has not reviewed — the plan.md edit is the approval artifact; auto mode is the ONLY exception, and only for groups that need no judgment."
+description: >-
+  WordPress duplicate category/tag cleanup for CADE domains (the term-merge
+  flow). CHECK scans term_merge_candidates (max 5 domains per run) and writes a
+  reviewable plan.md per domain; read-only apart from the plan files. MERGE
+  applies reviewed plans to the LIVE WP site: merges losers into winners,
+  deletes losers, rewrites stored content metadata and closes candidates. AUTO
+  applies only no-judgment groups; VERIFY asserts an applied run landed.
+  Defaults to --env production; outside local, merge requires --confirm. Use for
+  'check for term merges', 'any merge requests?', 'scan for duplicate terms',
+  'generate merge plans', 'apply the merge plan', 'merge the duplicates for
+  {domain}', 'auto-merge the safe groups', 'verify the merge landed', or 'cade-
+  terms'. NEVER apply a plan the user has not reviewed: the plan.md edit is the
+  approval; auto mode is the only exception, and only for groups that need no
+  judgment.
 ---
 
 # cade-terms
