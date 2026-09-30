@@ -1,7 +1,8 @@
-"""Enumerate CADE API endpoints from the live OpenAPI spec.
+"""Enumerate CADE (or, with `--service seo`, seo-service) API endpoints from
+the live OpenAPI spec.
 
 Fetches `/api/v1/openapi.json` from the target env (cached under
-`<skill-dir>/.cache/openapi-{env}.json`), then prints a
+`<skill-dir>/.cache/openapi-{env}.json`, `openapi-seo-{env}.json`), then prints a
 table of `METHOD  PATH  summary`. Filters narrow the output.
 
 Usage:
@@ -11,6 +12,7 @@ Usage:
     python list_endpoints.py --env stg
     python list_endpoints.py --refresh          # bust the cache
     python list_endpoints.py --json '/api/v1/domains/{domain}/keywords'   # dump raw OpenAPI for one path
+    python list_endpoints.py --service seo --filter internal
 """
 
 from __future__ import annotations
@@ -25,14 +27,9 @@ from urllib import request as urlrequest
 from urllib.error import URLError
 
 sys.path.insert(0, str(Path(__file__).parent))
-from load_settings import load as load_settings, base_host  # noqa: E402
+from load_settings import load as load_settings  # noqa: E402
+from call_api import SERVICES, _resolve_base_url  # noqa: E402
 
-
-DEFAULT_BASE_URLS: dict[str, str] = {
-    "prod": "https://seo-acg-api.prod.seosara.ai",
-    "stg": "https://seo-acg-api.stg.seosara.ai",
-    "local": "http://localhost:8000",
-}
 
 OPENAPI_PATH = "/api/v1/openapi.json"
 CACHE_DIR = Path(__file__).resolve().parent.parent / ".cache"
@@ -48,19 +45,15 @@ _NON_METHOD_KEYS = {
 }
 
 
-def _base_url(settings: dict[str, Any], env: str) -> str:
-    host = base_host(settings.get("api-url"))
-    return host or DEFAULT_BASE_URLS[env].rstrip("/")
-
-
-def _fetch_spec(env: str, refresh: bool) -> dict[str, Any]:
+def _fetch_spec(env: str, refresh: bool, service: str = "cade") -> dict[str, Any]:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE_DIR / f"openapi-{env}.json"
+    prefix = "openapi" if service == "cade" else f"openapi-{service}"
+    cache_path = CACHE_DIR / f"{prefix}-{env}.json"
     if cache_path.exists() and not refresh:
         return json.loads(cache_path.read_text())
 
-    settings = load_settings(env=env)
-    url = _base_url(settings, env) + OPENAPI_PATH
+    settings = load_settings(env=env, skill_key=SERVICES[service]["skill_key"])
+    url = _resolve_base_url(settings, env, service) + OPENAPI_PATH
     try:
         with urlrequest.urlopen(url, timeout=30) as resp:
             spec = json.loads(resp.read().decode("utf-8"))
@@ -91,6 +84,7 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--env", choices=("prod", "stg", "local"), default=os.environ.get("CADE_SKILL_ENV", "prod"))
+    parser.add_argument("--service", choices=sorted(SERVICES), default="cade", help="cade (default) or seo (seo-service).")
     parser.add_argument("--filter", help="Substring match on path (case-insensitive).")
     parser.add_argument("--method", help="Filter to one HTTP method (GET/POST/PUT/...).")
     parser.add_argument(
@@ -106,7 +100,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        spec = _fetch_spec(args.env, args.refresh)
+        spec = _fetch_spec(args.env, args.refresh, args.service)
     except (RuntimeError, FileNotFoundError, KeyError, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2

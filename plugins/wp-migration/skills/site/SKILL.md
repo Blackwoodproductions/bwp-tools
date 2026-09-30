@@ -5,7 +5,7 @@ description: Drive one site through the Premium SEO → CADE migration runbook (
 
 # wp-migration: site
 
-**Prod only. `prepare`, `remove`, `finish`, `rollback` and link sync write to live customer sites and bwp.** Never run anything the user didn't ask for; one stage per confirmation.
+**Prod only. `prepare`, `remove`, `finish`, `rollback`, link sync, a live `seo_crawl` and `seo_keyword_status` write to live customer sites and bwp.** Never run anything the user didn't ask for; one stage per confirmation.
 
 ## Before any write
 1. `cutover_plan(domain)`. If `blocked_on` is set → explain it from `references/codes.md` and stop.
@@ -19,7 +19,7 @@ description: Drive one site through the Premium SEO → CADE migration runbook (
 | 2 | prepare | `cutover_stage(stage="prepare")` (ask: publish or draft? default publish) | `stage = prepare`, no last_error |
 | 3 | ⏸ **Human** | "Switch Premium SEO **off** in wp-admin → Plugins → Deactivate." Skip when detected_state is A or B. | `cutover_plan` shows premium_seo not running. Stop here — don't queue the next stage until the user says it's done. |
 | 4 | remove | `cutover_stage(stage="remove")` | `stage = remove` |
-| 5 | ⏸ **Human** | "In the dashboard, open this site and click **Reconnect**." | bwp `2/1` (overview Q2). Stop here — don't queue the next stage until the user says it's done. |
+| 5 | reconnect | `seo_crawl(dry_run=true)` first (~30 s, writes nothing): show `verdict` and `predictedStatus`. Only if it predicts 2 and the user confirms, `seo_crawl(dry_run=false)`. If the dry run predicts anything else, stop and explain; don't run it live | the live crawl answers `status 2`, `wpPlugin 1` (or `seo_domain_facts` / overview Q2 shows `2/1`) |
 | 6 | finish | `cutover_stage(stage="finish")` | `stage = finish` |
 | 7 | verify | hand off to `wp-migration:verification` | 0 FAIL |
 
@@ -38,5 +38,6 @@ Queue the same stage for each confirmed domain one after another (each is a sepa
 Note: a `blocked_on` in the plan (e.g. `seo_service_unreachable`) does not by itself stop a rollback. The "Before any write" blocker stop applies to forward stages; for rollback the gate is Premium SEO being switched back on (CADE refuses with `CutoverNotRollbackable` otherwise).
 
 ## Never
+- Run `seo_crawl(dry_run=false)` without a dry run in the same session predicting status 2.
 - Run on staging (shares prod bwp/seo-service) — the connector is prod-only anyway.
 - Edit a cut-over site's content in Content Management during the migration.

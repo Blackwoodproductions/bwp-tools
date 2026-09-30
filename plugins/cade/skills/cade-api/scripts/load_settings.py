@@ -57,14 +57,16 @@ def _find_settings_file(start: Path, env: str) -> Path:
     )
 
 
-def load(start: Path | None = None, env: str | None = None) -> dict[str, Any]:
+def load(
+    start: Path | None = None, env: str | None = None, skill_key: str = SKILL_KEY
+) -> dict[str, Any]:
     env = _resolve_env(env)
     start = (start or Path.cwd()).resolve()
     path = _find_settings_file(start, env)
     data = json.loads(path.read_text())
-    if SKILL_KEY not in data:
-        raise KeyError(f"{path} is missing the '{SKILL_KEY}' block")
-    return data[SKILL_KEY]
+    if skill_key not in data:
+        raise KeyError(f"{path} is missing the '{skill_key}' block")
+    return data[skill_key]
 
 
 def base_host(api_url: str | None) -> str:
