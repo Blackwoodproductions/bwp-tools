@@ -1,6 +1,6 @@
 {
   "name": "seolocal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "SEO Local dashboard (seolocal-app) skills: read-only SQL over bwp_seo via the bwp-core DBHub server.",
   "author": {
     "name": "rascoder_og"

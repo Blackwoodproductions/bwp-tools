@@ -1,6 +1,6 @@
 {
   "name": "bwp-rw",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "UPDATE-capable DBHub connector (execute_sql_cade_rw, execute_sql_seo_rw, execute_sql_ranking_rw). SELECT + UPDATE only - the DB role cannot INSERT, DELETE or run DDL. Claude Code only: prompts for your personal token. Install alongside bwp-core when you need to fix row state.",
   "author": { "name": "rascoder_og" },
   "keywords": ["mcp", "database", "update"],
