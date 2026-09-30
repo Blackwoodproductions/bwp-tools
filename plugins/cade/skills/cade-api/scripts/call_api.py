@@ -1,7 +1,8 @@
-"""Call a CADE API endpoint against a chosen environment (prod by default).
+"""Call a CADE (or, with `--service seo`, a seo-service) API endpoint against a
+chosen environment (prod by default).
 
 Every call is persisted to `.claude/cade-api-run/[timestamp]-[slug].json`
-as a single document:
+(`.claude/seo-api-run/` for seo-service) as a single document:
 
     {"inputs": {...}, "outputs": {...}}
 
@@ -23,6 +24,7 @@ Usage:
     python call_api.py GET /domains/example.com/bron/cutover/verification --timeout 900
     python call_api.py GET /domains/example.com/keywords --env stg
     python call_api.py POST /domains/example.com/keywords --body '{...}' --dry-run
+    python call_api.py --service seo GET /internal/cade-domain-facts --query '{"domain":"example.com"}'
 """
 
 from __future__ import annotations
@@ -56,9 +58,23 @@ DEFAULT_BASE_URLS: dict[str, str] = {
 
 API_PREFIX = "/api/v1"
 
-# Run logs live outside the skill folder, per the skill's public contract.
-# Anyone can grep .claude/cade-api-run/ to audit what was called.
-RUN_LOG_DIR = Path(".claude/cade-api-run")
+# seo-service (NestJS) shares the `/api/v1` prefix, `X-API-Key` and the
+# openapi.json path, so one client serves both. It has no staging of its own:
+# CADE staging talks to the prod seo-service, so `stg` is refused rather than
+# silently hitting prod.
+SERVICES: dict[str, dict[str, Any]] = {
+    "cade": {"skill_key": "cade-api", "urls": DEFAULT_BASE_URLS},
+    "seo": {
+        "skill_key": "seo-api",
+        "urls": {"prod": "https://api.imagehosting.space", "local": "http://localhost:3003"},
+    },
+}
+
+
+def run_log_dir(service: str) -> Path:
+    """Run logs live outside the skill folder, per the skill's public contract.
+    Anyone can grep .claude/<skill>-run/ to audit what was called."""
+    return Path(".claude") / f"{SERVICES[service]['skill_key']}-run"
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +106,7 @@ def _resolve_auth(explicit: str | None) -> str:
     return explicit or "api"
 
 
-def _resolve_base_url(settings: dict[str, Any], env: str) -> str:
+def _resolve_base_url(settings: dict[str, Any], env: str, service: str = "cade") -> str:
     """Settings wins; fall back to the baked-in env defaults.
 
     `api-url` is treated as a bare host — any trailing `/api/v1` or `/api`
@@ -99,15 +115,18 @@ def _resolve_base_url(settings: dict[str, Any], env: str) -> str:
     host = base_host(settings.get("api-url"))
     if host:
         return host
-    return DEFAULT_BASE_URLS[env].rstrip("/")
+    urls = SERVICES[service]["urls"]
+    if env not in urls:
+        raise ValueError(f"--service {service} has no '{env}' environment ({', '.join(urls)}).")
+    return urls[env].rstrip("/")
 
 
-def _require_key(settings: dict[str, Any], which: str) -> str:
+def _require_key(settings: dict[str, Any], which: str, skill_key: str = "cade-api") -> str:
     field = "api-key" if which == "api" else "wp-plugin-api-key"
     value = (settings.get(field) or "").strip()
     if not value:
         raise RuntimeError(
-            f"Missing '{field}' in the cade-api settings block. "
+            f"Missing '{field}' in the {skill_key} settings block. "
             f"Edit `.claude/skills.settings.<env>.json` and fill it in."
         )
     return value
@@ -197,10 +216,11 @@ def _slugify_endpoint(method: str, path: str) -> str:
 
 
 def _save_run(inputs: dict[str, Any], outputs: dict[str, Any]) -> Path:
-    RUN_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_dir = run_log_dir(inputs["service"])
+    log_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     slug = _slugify_endpoint(inputs["method"], inputs["path"])
-    out_path = RUN_LOG_DIR / f"{ts}-{slug}.json"
+    out_path = log_dir / f"{ts}-{slug}.json"
     out_path.write_text(
         json.dumps({"inputs": inputs, "outputs": outputs}, indent=2, default=str)
     )
@@ -233,6 +253,7 @@ def run(
     destructive: bool,
     timeout: float | None,
     dry_run: bool,
+    service: str = "cade",
 ) -> int:
     method = method.upper()
     if method not in ALL_METHODS:
@@ -243,10 +264,15 @@ def run(
     path = _normalize_path(path)
     _check_gating(method, confirm=confirm, destructive=destructive)
 
-    settings = load_settings(env=env)
-    base_url = _resolve_base_url(settings, env)
+    skill_key = SERVICES[service]["skill_key"]
+    if service != "cade" and env not in SERVICES[service]["urls"]:
+        raise ValueError(f"--service {service} has no '{env}' environment; it shares prod. Use --env prod or local.")
     which_auth = _resolve_auth(auth)
-    key = _require_key(settings, which_auth)
+    if service != "cade" and which_auth != "api":
+        raise ValueError("--auth plugin is a CADE header; seo-service only takes X-API-Key.")
+    settings = load_settings(env=env, skill_key=skill_key)
+    base_url = _resolve_base_url(settings, env, service)
+    key = _require_key(settings, which_auth, skill_key)
 
     query_str = "?" + urlencode(query, doseq=True) if query else ""
     url = f"{base_url}{path}{query_str}"
@@ -258,6 +284,7 @@ def run(
         headers["X-WordPress-Plugin-Key"] = key
 
     inputs: dict[str, Any] = {
+        "service": service,
         "method": method,
         "path": path,
         "url": url.replace(key, "***") if key else url,
@@ -335,6 +362,12 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
+        "--service",
+        choices=sorted(SERVICES),
+        default="cade",
+        help="Which API: cade (default) or seo (seo-service, settings block `seo-api`).",
+    )
+    parser.add_argument(
         "method",
         type=str.upper,
         choices=sorted(ALL_METHODS),
@@ -407,6 +440,7 @@ def main() -> int:
             destructive=args.destructive,
             timeout=args.timeout,
             dry_run=args.dry_run,
+            service=args.service,
         )
     except (ValueError, RuntimeError, KeyError, FileNotFoundError) as e:
         print(f"error: {e}", file=sys.stderr)

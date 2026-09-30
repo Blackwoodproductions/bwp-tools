@@ -4,8 +4,8 @@ One row per code. The `blocked_on` values arrive on `cutover_plan` (and, for a b
 
 | Code / message starts with | Where it shows | Means | Do this |
 |---|---|---|---|
-| `seo_service_unreachable` | plan `blocked_on` | CADE could not reach seo-service; the detail carries the exception, e.g. `ConnectError: [Errno 111] Connection refused` | Escalate to the migration lead (no operator remedy is documented) |
-| `bwp_domain_missing` | plan `blocked_on` | bwp has no live domain with this name (`bwp has no live domain named <domain>`) | Escalate to the migration lead |
+| `seo_service_unreachable` | plan `blocked_on` | CADE could not reach seo-service; the detail carries the exception, e.g. `ConnectError: [Errno 111] Connection refused` | Call `seo_domain_facts(domain)`. If it answers, seo-service is up and only CADE's path to it failed: re-run `cutover_plan` in a few minutes. If it is also `seo-service unreachable`, seo-service is down. Either way, if it persists, escalate to the migration lead with both results |
+| `bwp_domain_missing` | plan `blocked_on` | bwp has no live domain with this name (`bwp has no live domain named <domain>`) | Call `seo_domain_facts(domain)`: `seo-service 404` means no row by that exact name (check the spelling or a `www.` variant), and `409` means two live rows share the name. Escalate to the migration lead with which one it was |
 | `domain_not_registered` | plan `blocked_on` | CADE has no domain row; detect creates it, then the operator saves the WordPress connection | Run `detect`, then have the operator save the site's WordPress connection |
 | `platform_connection_missing` | plan `blocked_on` | No WordPress connection: `install cade-seo, create an application password and save the connection, then re-run detect` | Install cade-seo, create an application password, save the connection, re-run `detect` |
 | `platform_profile_empty` | plan `blocked_on` | The connection's default profile has no WordPress author | Give the connection's default profile its WordPress author, then re-run `detect` |

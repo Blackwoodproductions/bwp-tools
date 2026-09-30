@@ -4,7 +4,7 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 
 | Plugin | Gives you | Install it if you work on |
 |---|---|---|
-| `cade` | `cade-db-queries`, `cade-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
+| `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
 | `seolocal` | `seolocal-db-queries` | seolocal-app |
 | `ranking` | `ranking-db-queries` | ranking-service |
 | `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE) | only if you need to fix row state |
@@ -29,7 +29,7 @@ Then sign in once: `/mcp` → `plugin:bwp-core:dbhub` → **Authenticate** with 
 
 ## 2. Extra setup for the cade script skills
 
-`cade-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks` and `reconcile-wp-content` run Python scripts. For those:
+`cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks` and `reconcile-wp-content` run Python scripts. For those:
 
 - Run Claude from the **cade-service repo root**, with its `venv/` set up (the scripts use `venv/bin/python`) and a valid `.env`.
 - Create `.claude/skills.settings.prod.json` in cade-service (gitignored). Add `…stg.json` / `…local.json` only if you target those envs.
@@ -37,6 +37,7 @@ Then sign in once: `/mcp` → `plugin:bwp-core:dbhub` → **Authenticate** with 
 | Block | Keys | Used by |
 |---|---|---|
 | `cade-api` | `api-key` · `api-url` *(optional, bare host)* · `wp-plugin-api-key` *(optional)* | cade-api |
+| `seo-api` | `api-key` *(seo-service `SEO_SERVICE_API_KEY`)* · `api-url` *(optional, bare host)* | seo-api (prod + local only; there is no seo-service staging) |
 | `cade-flower` | `url` · `user` · `password` | cade-flower |
 | `cade-db-queries` | `host` · `port` · `user` · `pass` · `db-default` | dump-clustered-content, check-for-seomoney-content, reconcile-wp-content |
 | `cade-terms-merge` | `database_url` *(write-capable role)* · `credential_encryption_key` · `crawler_proxy_urls` *(optional)* | cade-terms (reconcile-wp-content reads its encryption key too) |
@@ -44,6 +45,7 @@ Then sign in once: `/mcp` → `plugin:bwp-core:dbhub` → **Authenticate** with 
 ```json
 {
   "cade-api":         { "api-key": "…" },
+  "seo-api":          { "api-key": "…" },
   "cade-flower":      { "url": "…", "user": "…", "password": "…" },
   "cade-db-queries":  { "host": "…", "port": 5432, "user": "…", "pass": "…", "db-default": "seo-acg" },
   "cade-terms-merge": { "database_url": "postgresql://…", "credential_encryption_key": "…" }
