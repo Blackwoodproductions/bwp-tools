@@ -37,6 +37,11 @@ Queue the same stage for each confirmed domain one after another (each is a sepa
 
 Note: a `blocked_on` in the plan (e.g. `seo_service_unreachable`) does not by itself stop a rollback. The "Before any write" blocker stop applies to forward stages; for rollback the gate is Premium SEO being switched back on (CADE refuses with `CutoverNotRollbackable` otherwise).
 
+## Anything outside the runbook (e.g. upgrading cade-seo)
+`api_endpoints(search)` finds a CADE route; `api_get(path)` reads it (any operator). `api_write(method, path, confirm_path, body)` writes, but only for admins: anyone else gets a refusal, so relay it and stop. Confirm with the user first, repeat the path in `confirm_path`, and add `destructive=true` only for a DELETE the user explicitly asked for.
+
+Upgrading the plugin: `api_get("/domains/{domain}/platform-connections")` → the WordPress connection id → `api_write("POST", "/domains/{domain}/platform-connections/{id}/plugin-update", same path)`. A 409 "predates remote updates" means the site's build has no `self_update`: it must be updated once by hand in wp-admin. A Sucuri captcha or a 401 blocks this exactly as it blocks the cutover writes.
+
 ## Never
 - Run `seo_crawl(dry_run=false)` without a dry run in the same session predicting status 2.
 - Run on staging (shares prod bwp/seo-service) — the connector is prod-only anyway.
