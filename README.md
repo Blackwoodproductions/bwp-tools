@@ -5,7 +5,7 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 | Plugin | Gives you | Install it if you work on |
 |---|---|---|
 | `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
-| `seolocal` | `seolocal-db-queries` | seolocal-app |
+| `seolocal` | `seolocal-db-queries`, `seolocal-admin` (create domain, add keywords, change package — SEO Local staff admins; via cade-mcp) | seolocal-app |
 | `ranking` | `ranking-db-queries` | ranking-service |
 | `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE) | only if you need to fix row state |
 | `bwp-core` | The shared connectors: **DBHub** (read-only SQL over prod) and **Logfire** | installed automatically with the three above |
