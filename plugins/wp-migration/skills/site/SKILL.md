@@ -16,7 +16,7 @@ description: Drive one site through the Premium SEO → CADE migration runbook (
 | # | Step | How | Done when |
 |---|---|---|---|
 | 1 | detect | `cutover_stage(stage="detect")` | record `stage = detect` |
-| 2 | prepare | `cutover_stage(stage="prepare")` (ask: publish or draft? default publish) | `stage = prepare`, no last_error |
+| 2 | prepare | If the plan shows `resources_base_free: false`, first set a new Resources address (`resources_base_taken` in `references/codes.md`). Then `cutover_stage(stage="prepare")` (ask: publish or draft? default publish) | `stage = prepare`, no last_error |
 | 3 | ⏸ **Human** | "Switch Premium SEO **off** in wp-admin → Plugins → Deactivate." Skip when detected_state is A or B. | `cutover_plan` shows premium_seo not running. Stop here — don't queue the next stage until the user says it's done. |
 | 4 | remove | `cutover_stage(stage="remove")` | `stage = remove` |
 | 5 | reconnect | `seo_crawl(dry_run=true)` first (~30 s, writes nothing): show `verdict` and `predictedStatus`. Only if it predicts 2 and the user confirms, `seo_crawl(dry_run=false)`. If the dry run predicts anything else, stop and explain; don't run it live | the live crawl answers `status 2`, `wpPlugin 1` (or `seo_domain_facts` / overview Q2 shows `2/1`) |
