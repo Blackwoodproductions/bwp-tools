@@ -19,7 +19,7 @@
     {
       "name": "seolocal",
       "source": "./plugins/seolocal",
-      "description": "SEO Local dashboard skills (seolocal-db-queries)"
+      "description": "SEO Local dashboard skills (seolocal-db-queries, seolocal-admin)"
     },
     {
       "name": "cade",

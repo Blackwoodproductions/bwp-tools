@@ -82,7 +82,7 @@ Reads never mutate. Updates go through a **separate** tool, `execute_sql_seo_rw`
 1. Only when the user explicitly asks to change data. Never "fix" something you noticed while reading.
 2. `SELECT` the exact rows first with `execute_sql_seo` and show them to the user.
 3. One `UPDATE … WHERE <primary key>` per call — never a bare `UPDATE`, never a range unless the user spelled it out. Relay the affected-row count back.
-4. The DB user (`claude_rw`) can only `SELECT` and `UPDATE`: `INSERT`, `DELETE`, `TRUNCATE` and DDL are refused by the engine — don't try.
+4. The DB user (`claude_rw`) can only `SELECT` and `UPDATE`: `INSERT`, `DELETE`, `TRUNCATE` and DDL are refused by the engine — don't try. To create a domain, add keywords or change a package, use the `seolocal-admin` skill (cade-mcp tools) instead.
 5. If `execute_sql_seo_rw` isn't available, say so: the user installs `bwp-rw@bwp-tools` and enters their token (`/plugin` → bwp-rw → configuration).
 
 ```jsonc
@@ -143,4 +143,4 @@ WHERE table_schema = 'bwp_seo'
 - **Not the ranking client** — for `bwp_ranking_service` questions, prefer the `ranking-db-queries` skill (ranking plugin).
 - **Not a code reader** — for source-level analysis, use `Read` / `Grep`.
 - **Not an investigation orchestrator** — that's a higher-level workflow that may *call* this skill alongside others.
-- **Not a general write path** — the only write is `UPDATE` through `execute_sql_seo_rw` (see *Updating rows*); INSERT, DELETE and DDL are impossible by DB grant. Anything else the user runs themselves.
+- **Not a general write path** — the only write is `UPDATE` through `execute_sql_seo_rw` (see *Updating rows*); INSERT, DELETE and DDL are impossible by DB grant. Creating domains, adding keywords and changing packages go through the `seolocal-admin` skill; anything else the user runs themselves.
