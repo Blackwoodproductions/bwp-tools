@@ -89,6 +89,28 @@ Drives Premium SEO → CADE site migrations through the `cade-mcp` connector: ov
 
 Every write asks for confirmation and repeats the domain. A site another operator owns needs their OK (`force`).
 
+## 4c. Claude Team (org install)
+
+A plugin or connector you add from your own Customize page is **individual**: only you get it. To give the whole Team org access, an **Owner** sets it up once in the org admin settings.
+
+**Owner, once:**
+
+1. Org admin settings → plugins: add the marketplace `Blackwoodproductions/bwp-tools`, then enable `bwp-core`, `cade`, `seolocal`, `ranking` and `wp-migration` for the org. **Don't** add `bwp-rw`: it needs a personal token and works in Claude Code only.
+2. Org admin settings → connectors: if members need these outside the plugins, add them as custom connectors:
+   - `https://dbhub.imagehosting.space/mcp` (DBHub)
+   - `https://logfire-us.pydantic.dev/mcp` (Logfire)
+   - `https://cade-mcp.imagehosting.space/mcp` (cade-mcp)
+3. For Claude Code, go to Organization settings → Claude Code → Managed settings and add:
+   ```json
+   {
+     "extraKnownMarketplaces": { "bwp-tools": { "source": { "source": "github", "repo": "Blackwoodproductions/bwp-tools" } } },
+     "enabledPlugins": { "bwp-core@bwp-tools": true, "cade@bwp-tools": true, "seolocal@bwp-tools": true, "ranking@bwp-tools": true, "wp-migration@bwp-tools": true }
+   }
+   ```
+4. Remove your personal installs of the same plugins and connectors so you don't end up with two copies.
+
+**Every member:** go to Customize → Connectors and click **Connect** on DBHub, Logfire and cade-mcp. Sign in with your **@blackwoodproductions.com** Google account; any other account is refused. A connector stays greyed out until you've connected it yourself, because nobody can sign in for you.
+
 ## 5. Updating
 
 ```
