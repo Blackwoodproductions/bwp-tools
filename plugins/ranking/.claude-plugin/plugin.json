@@ -1,7 +1,7 @@
 {
   "name": "ranking",
-  "version": "1.0.4",
-  "description": "Ranking service skills: read-only SQL over bwp_ranking_service (and bwp_seo) via the bwp-core DBHub server.",
+  "version": "1.1.0",
+  "description": "Ranking service skills: read-only SQL over bwp_ranking_service (and bwp_seo) via the bwp-core DBHub server, plus admin-only report re-queue / re-score through the cade-mcp connector.",
   "author": {
     "name": "rascoder_og"
   },
