@@ -10,7 +10,10 @@ description: >-
   "audit DataForSEO costs", or "ranking-db-queries". Column reference is the
   ranking-service repo (`app/models/*.py`; external tables in
   `app/models/external/`). Four-layer read-only contract (MariaDB role + READ
-  ONLY transaction + DBHub classifier + timeout); never mutates production.
+  ONLY transaction + DBHub classifier + timeout); never mutates production. Admins
+  can also re-queue or re-score a domain's report ("re-queue the ranking
+  report", "report got stuck") through the cade-mcp ranking_queue /
+  ranking_rescore tools.
 ---
 
 # ranking-db-queries
@@ -102,6 +105,15 @@ execute_sql_ranking     { "sql": "SELECT id, status, failure_reason FROM serp_ta
 execute_sql_ranking_rw  { "sql": "UPDATE serp_tasks SET status = 'PENDING' WHERE id = '<uuid>'" }      // 2. change, after confirmation
 ```
 
+## Re-queue or re-score a report (admins only)
+
+A report can't be deleted or rebuilt with SQL (no INSERT/DELETE grant). Two **cade-mcp** connector tools reach ranking-service's admin API instead. Both refuse anyone not in cade-mcp's admin list, and both need `confirm_domain` to repeat `domain` exactly. Each call is audited.
+
+- **`ranking_queue { domain, confirm_domain }`** queues a **new** report, which costs about $0.50 of DataForSEO calls. "Task queued" only means the Celery task was sent. The worker still refuses a domain that already has a PENDING or IN_PROCESS report, and one that isn't active in `bwp_seo`. Confirm it landed: `SELECT id, status, created_at FROM serp_reports WHERE domain_id = '<id>' ORDER BY created_at DESC LIMIT 2`.
+- **`ranking_rescore { domain, confirm_domain }`** deletes the **latest** report's scores, resets its tasks to COLLECTED and sets it IN_PROCESS, so the scorer re-runs on SERP data already fetched. Nothing new is bought. Use it after a scoring fix, not when the SERPs themselves were bad. While that report is IN_PROCESS, `ranking_queue` is refused.
+
+A bad report (e.g. PROCESSED with far fewer scores than the previous one) doesn't block a new one; just queue. Before queuing, confirm with the user: it spends money. A non-admin is refused; tell them to ask an admin.
+
 ## Query etiquette
 
 You're talking to prod. Be polite:
@@ -155,4 +167,4 @@ WHERE table_schema = 'bwp_ranking_service'
 - **Not the dashboard client** — for general `bwp_seo` questions, prefer the `seolocal-db-queries` skill (seolocal plugin); this skill only reaches into `bwp_seo` for auto-queue eligibility.
 - **Not a code reader** — for source-level analysis, use `Read` / `Grep`.
 - **Not an investigation orchestrator** — that's a higher-level workflow that may *call* this skill alongside others.
-- **Not a general write path** — the only write is `UPDATE` through `execute_sql_ranking_rw` (see *Updating rows*); INSERT, DELETE and DDL are impossible by DB grant. Anything else the user runs themselves (or via Alembic).
+- **Not a general write path** — SQL writes are `UPDATE` through `execute_sql_ranking_rw` only (see *Updating rows*); INSERT, DELETE and DDL are impossible by DB grant. Queuing and re-scoring go through the admin-only cade-mcp tools (see *Re-queue or re-score a report*). Anything else the user runs themselves (or via Alembic).
