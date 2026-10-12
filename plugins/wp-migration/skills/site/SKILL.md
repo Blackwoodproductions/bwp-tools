@@ -1,6 +1,6 @@
 ---
 name: site
-description: Drive one site through the Premium SEO → CADE migration runbook (plan → detect → prepare → switch Premium SEO off → remove → reconnect crawl → finish → verify), or roll it back. Use for "migrate {domain}", "next step for {domain}", "run prepare on {domain}", "why did {domain} fail", "roll back {domain}", or several domains at once ("kick prepare on a.com, b.com").
+description: Drive one site through the Premium SEO → CADE migration runbook (plan → detect → prepare → switch Premium SEO off → remove → reconnect crawl → finish → verify), or roll it back. Use for "migrate {domain}", "next step for {domain}", "run prepare on {domain}", "why did {domain} fail", "roll back {domain}", or several domains at once ("kick prepare on a.com, b.com"). Also "hide CADE/BRON articles from {domain}'s blog page" / "put them back on the blog".
 ---
 
 # wp-migration: site
@@ -36,6 +36,14 @@ Queue the same stage for each confirmed domain one after another (each is a sepa
 3. `cutover_record` should read `stage = rolled_back`.
 
 Note: a `blocked_on` in the plan (e.g. `seo_service_unreachable`) does not by itself stop a rollback. The "Before any write" blocker stop applies to forward stages; for rollback the gate is Premium SEO being switched back on (CADE refuses with `CutoverNotRollbackable` otherwise).
+
+## Blog feed (client wants the articles off their blog page)
+These are two switches, one per pipeline (`bron`, `cade`). A hidden article stays live, indexed and in the sitemap. It only leaves the blog posts page and the RSS feeds. Works on any site with a WordPress connection, migrated or not.
+1. Call `blog_visibility(domain)` to show the current `hide_bron` / `hide_cade`.
+2. Confirm with the user, then call `blog_visibility_set(domain, confirm_domain, strategy, hidden)`. A cut-over site's articles are `bron`. Any operator may call it.
+3. Ask the client to clear their page cache if `/blog/` still lists the articles.
+
+A `CADE 409` means one of two things. Either the site has no usable WordPress connection, or its SEO Toolkit plugin predates `blog_visibility`. In the second case, upgrade the plugin as below, then retry. A builder widget (for example a "recent posts" block on the home page) runs its own query and is not affected; say so if the client points at one.
 
 ## Anything outside the runbook (e.g. upgrading cade-seo)
 `api_endpoints(search)` finds a CADE route; `api_get(path)` reads it (any operator). `api_write(method, path, confirm_path, body)` writes, but only for admins: anyone else gets a refusal, so relay it and stop. Confirm with the user first, repeat the path in `confirm_path`, and add `destructive=true` only for a DELETE the user explicitly asked for.
