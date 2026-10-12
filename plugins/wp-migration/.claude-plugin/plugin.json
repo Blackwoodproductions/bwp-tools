@@ -1,7 +1,7 @@
 {
   "name": "wp-migration",
-  "version": "0.4.0",
-  "description": "Premium SEO → CADE site migrations: fleet overview, per-site runbook, verification, link sync and watch period. Actions go through the cade-mcp connector (company Google sign-in), including the seo-service reads, the reconnect crawl and the whole CADE API (reads for everyone, writes for admins).",
+  "version": "0.5.0",
+  "description": "Premium SEO → CADE site migrations: fleet overview, per-site runbook, verification, link sync, watch period and the blog-feed switches. Actions go through the cade-mcp connector (company Google sign-in), including the seo-service reads, the reconnect crawl and the whole CADE API (reads for everyone, writes for admins).",
   "author": { "name": "rascoder_og" },
   "dependencies": ["bwp-core"]
 }

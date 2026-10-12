@@ -80,12 +80,12 @@ Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tool
 
 ## 4b. wp-migration (Claude Desktop)
 
-Drives Premium SEO → CADE site migrations through the `cade-mcp` connector: overview, per-site runbook, verification, link sync and the 14-day watch.
+Drives Premium SEO → CADE site migrations through the `cade-mcp` connector: overview, per-site runbook, verification, link sync, the 14-day watch, and hiding CADE/BRON articles from a site's blog page.
 
 1. Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tools`.
 2. Install `bwp-core` and `wp-migration`.
 3. When `cade-mcp` asks, sign in with your **@blackwoodproductions.com** Google account.
-4. Try: "migration overview", "migrate example.com", "verify example.com", "watch check".
+4. Try: "migration overview", "migrate example.com", "verify example.com", "watch check", "hide the BRON articles from example.com's blog".
 
 Every write asks for confirmation and repeats the domain. A site another operator owns needs their OK (`force`).
 
