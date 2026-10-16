@@ -2,10 +2,7 @@
   "mcpServers": {
     "dbhub-rw": {
       "type": "http",
-      "url": "https://dbhub.imagehosting.space/rw/mcp",
-      "headers": {
-        "Authorization": "Bearer ${user_config.dbhub_rw_token}"
-      }
+      "url": "https://dbhub-rw.imagehosting.space/mcp"
     }
   }
 }

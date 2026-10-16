@@ -14,7 +14,7 @@
     {
       "name": "bwp-rw",
       "source": "./plugins/bwp-rw",
-      "description": "UPDATE-capable DBHub connector (SELECT + UPDATE only, never DELETE). Claude Code only; prompts for your personal token."
+      "description": "UPDATE-capable DBHub connector (SELECT + UPDATE only, never DELETE). Google sign-in; bwp_admins only."
     },
     {
       "name": "seolocal",
