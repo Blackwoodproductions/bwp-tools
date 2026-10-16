@@ -7,7 +7,7 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 | `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
 | `seolocal` | `seolocal-db-queries`, `seolocal-admin` (create domain, add keywords, change package — SEO Local staff admins; via cade-mcp) | seolocal-app |
 | `ranking` | `ranking-db-queries` | ranking-service |
-| `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE) | only if you need to fix row state |
+| `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE); `bwp_admins` only | only if you need to fix row state |
 | `bwp-core` | The shared connectors: **DBHub** (read-only SQL over prod) and **Logfire** | installed automatically with the three above |
 
 Skills are namespaced by plugin: `/cade:cade-api`, `/seolocal:seolocal-db-queries`, …
@@ -59,13 +59,13 @@ Fill in only the blocks for the skills you use. Ask Fernando for the values.
 
 ## 3. UPDATE access (`bwp-rw`, optional)
 
-Ask Fernando for your personal update token, then:
+Only people on the `bwp_admins` list get in (ask Fernando to be added). Then:
 
 ```bash
-claude plugin install bwp-rw@bwp-tools   # user scope: available in every repo; prompts for the token
+claude plugin install bwp-rw@bwp-tools   # user scope: available in every repo
 ```
 
-To change or clear the token: `/plugin` → **Installed** → `bwp-rw` → **Configure options**.
+`/mcp` → `plugin:bwp-rw:dbhub-rw` → **Authenticate** and sign in with your **@blackwoodproductions.com** Google account. An account not on the list gets 403.
 
 ## 4. Claude Desktop / Cowork
 
@@ -75,7 +75,7 @@ Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tool
 |---|---|---|
 | `*-db-queries` skills (read) + Logfire | ✅ | ✅ |
 | `cade-task-failure-auditor` agent | ✅ | Cowork only |
-| `bwp-rw` (UPDATE) | ✅ | ✗ (can't hold a personal token) |
+| `bwp-rw` (UPDATE, `bwp_admins` only) | ✅ | ✅ |
 | cade script skills (§2) | ✅ | ✗ |
 
 ## 4b. wp-migration (Claude Desktop)
@@ -95,7 +95,7 @@ A plugin or connector you add from your own Customize page is **individual**: on
 
 **Owner, once:**
 
-1. Org admin settings → plugins: add the marketplace `Blackwoodproductions/bwp-tools`, then enable `bwp-core`, `cade`, `seolocal`, `ranking` and `wp-migration` for the org. **Don't** add `bwp-rw`: it needs a personal token and works in Claude Code only.
+1. Org admin settings → plugins: add the marketplace `Blackwoodproductions/bwp-tools`, then enable `bwp-core`, `cade`, `seolocal`, `ranking` and `wp-migration` for the org. `bwp-rw` is safe to enable too: anyone not on `bwp_admins` gets 403.
 2. Org admin settings → connectors: if members need these outside the plugins, add them as custom connectors:
    - `https://dbhub.imagehosting.space/mcp` (DBHub)
    - `https://logfire-us.pydantic.dev/mcp` (Logfire)
@@ -129,11 +129,12 @@ Desktop: click **Update** on the marketplace.
 ```
 you ── HTTPS ──▶ dbhub.imagehosting.space   (caddy-edge, seo-money-deployments)
    bwp-core   /mcp     ─▶ pomerium (Google sign-in) ─▶ dbhub   readonly tools, DB user claude_readonly (SELECT)
-   bwp-rw     /rw/mcp  ─▶ dbhub-rw  execute_sql_*_rw, DB user claude_rw (SELECT, UPDATE)
+you ── HTTPS ──▶ dbhub-rw.imagehosting.space
+   bwp-rw     /mcp     ─▶ pomerium (Google sign-in, bwp_admins only) ─▶ dbhub-rw   execute_sql_*_rw, DB user claude_rw (SELECT, UPDATE)
 ```
 
 - Read tools: `execute_sql_*`, `search_objects_*`, `explain_sql_*` (readonly, 30 s timeout). Update tools: `execute_sql_*_rw`. The `claude_rw` role cannot INSERT, DELETE, TRUNCATE or run DDL.
-- **Read access:** OAuth through Pomerium in front of DBHub. Only `@blackwoodproductions.com` Google accounts get in, so suspending someone in Workspace revokes them. DBHub's own read token is known only to Pomerium, never to this repo. **Update tokens:** one per person, in the deployments secret `DBHUB_RW_AUTH_TOKEN` (comma-separated), never in this repo.
+- **Read access:** OAuth through Pomerium in front of DBHub. Only `@blackwoodproductions.com` Google accounts get in, so suspending someone in Workspace revokes them. Neither DBHub container has a token or a published port; Pomerium is the only way in. **Update access:** the same Google sign-in, limited to the emails in `bwp_admins` (`seo-money-deployments/ansible/group_vars/dbhub/all.yml`).
 - Server side (DNS, DB users, secrets, deploy): `seo-money-deployments/docs/setup-dbhub-tutorial.md`.
 
 **Change and release**
@@ -144,6 +145,6 @@ claude plugin validate plugins/cade                              # each plugin, 
 ```
 
 - Release: bump `version` in the plugin's `plugin.json`, merge to `main`. Users then update (§5).
-- Never commit a secret: this repo is public. Rotate the read token: change `DBHUB_AUTH_TOKEN` (deployments env `dbhub-production`) and run **Deploy DBHub**. Nothing changes here.
-- Revoke someone's update token: remove it from `DBHUB_RW_AUTH_TOKEN`, run **Deploy DBHub**.
+- Never commit a secret: this repo is public.
+- Grant or revoke update access: edit `bwp_admins` in the deployments repo, merge, run **Deploy DBHub**.
 - Push access without a GitHub seat: add the person's SSH key as a **read-write deploy key** (Settings → Deploy keys) and delete it to revoke. `main` is protected, so changes land through PRs.
