@@ -1,6 +1,6 @@
 {
   "name": "seolocal",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "SEO Local dashboard (seolocal-app) skills: read-only SQL over bwp_seo via the bwp-core DBHub server, plus staff-admin writes (create domain, add keywords, change package, create/edit packages) through the cade-mcp connector.",
   "author": {
     "name": "rascoder_og"
