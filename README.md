@@ -12,6 +12,8 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 
 Skills are namespaced by plugin: `/cade:cade-api`, `/seolocal:seolocal-db-queries`, …
 
+Step-by-step walkthroughs with worked examples (package changes with a keyword set, replacing keywords, Agentic sets, troubleshooting): [`docs/`](docs/README.md).
+
 ## 1. Install (Claude Code)
 
 ```bash
