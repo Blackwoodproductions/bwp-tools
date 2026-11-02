@@ -35,6 +35,11 @@
       "name": "wp-migration",
       "source": "./plugins/wp-migration",
       "description": "Premium SEO → CADE site migrations (overview, site, verification, link-sync, watch). Needs bwp-core; sign in with your company Google account."
+    },
+    {
+      "name": "hosted",
+      "source": "./plugins/hosted",
+      "description": "Onboard sites onto CADE's hosted renderer (overview, site setup per host, rewrite check). Sign in with your company Google account."
     }
   ]
 }
