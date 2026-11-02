@@ -7,12 +7,13 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 | `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
 | `seolocal` | `seolocal-db-queries`, `seolocal-admin` (create domain, add keywords, change package — SEO Local staff admins; via cade-mcp) | seolocal-app |
 | `ranking` | `ranking-db-queries` | ranking-service |
+| `hosted` | `overview`, `site`, `check`: onboard sites onto CADE's hosted renderer (create the connection, the rewrite or DNS change per host, the rewrite check that names who answered and the fix; via cade-mcp, creating a connection is for admins) | hosted renderer onboarding |
 | `bwp-rw` | `execute_sql_{cade,seo,ranking}_rw`: **UPDATE** access to prod (SELECT + UPDATE only, never DELETE); `bwp_admins` only | only if you need to fix row state |
 | `bwp-core` | The shared connectors: **DBHub** (read-only SQL over prod) and **Logfire** | installed automatically with the three above |
 
 Skills are namespaced by plugin: `/cade:cade-api`, `/seolocal:seolocal-db-queries`, …
 
-Step-by-step walkthroughs with worked examples (package changes with a keyword set, replacing keywords, Agentic sets, troubleshooting): [`docs/`](docs/README.md).
+Step-by-step walkthroughs with worked examples (package changes with a keyword set, replacing keywords, Agentic sets, troubleshooting, onboarding a site on the hosted renderer): [`docs/`](docs/README.md).
 
 ## 1. Install (Claude Code)
 

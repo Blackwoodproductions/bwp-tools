@@ -11,4 +11,12 @@ Step-by-step walkthroughs for the staff-admin writes the `seolocal` plugin gives
 
 Every write is a dry run until you repeat it with `dry_run=false`, and every write repeats the domain in `confirm_domain`. The assistant does this for you; the tutorials show the calls so you can read what it did.
 
+## Hosted renderer
+
+The `hosted` plugin onboards a client site onto CADE's hosted renderer through the same `cade-mcp` connector: install `hosted` and sign in. Reads and the rewrite check are open to every operator; creating a connection is for admins.
+
+| Tutorial | When you need it |
+|---|---|
+| [Onboard a site on the hosted renderer](hosted-onboarding.md) | A client's articles should appear under their own domain (`/resources` or `resources.`) without WordPress. |
+
 All domain names, ids and keywords in these pages are made-up examples. Look up the real ones with the SQL shown in each tutorial.
