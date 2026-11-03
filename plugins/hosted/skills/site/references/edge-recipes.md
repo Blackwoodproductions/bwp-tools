@@ -16,7 +16,7 @@ The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on r
 
 ## Vercel (`subpath_host`)
 
-Three places, walked live on 2026-11-03. Ask the client where they change routing, and recommend the first. In all three, `{BASE}` inside a regex needs its regex characters escaped (a `.` becomes `\.`); dashboard-made bases are `[a-z0-9-]` and need nothing.
+Three places, walked live on 2026-11-03. Ask the client where they change routing, and recommend the first. Ways 1 and 3 put `{BASE}` inside a regex, so escape its regex characters: a `.` becomes `\.` in the dashboard field, and `\\.` inside way 3's JSON string. Dashboard-made bases are `[a-z0-9-]` and need nothing.
 
 **1. A routing rule in Vercel's dashboard (recommended).** No code, no redeploy, works on Hobby, and project rules run before the deployment's catch-all and files. Project → CDN → Routing Rules → Create Route:
 - If Request Path → **Regex**: `^{BASE}(/.*)?$`
@@ -36,7 +36,7 @@ Vercel fills in only `$1`. Its Generate Rule AI and the field placeholder both w
 }
 ```
 
-Merge these into the existing `rewrites`; don't replace the file. A catch-all goes after them. Deploy to Production (a Preview doesn't serve the domain). Never `{BASE}/:path*`: behind a catch-all it misses every address ending in `/`, which is where articles live, and the check fails with `slash_unrouted`.
+Merge these into the existing `rewrites`; don't replace the file. A catch-all goes after them. Deploy to Production (a Preview doesn't serve the domain). Never `{BASE}/:path*`: behind a catch-all it misses every address ending in `/` (`{BASE}/` itself, Premium SEO's old `{slug}-{id}/` article links, the BRON crawler's probe), and the check fails with `slash_unrouted`.
 
 **3. `vercel.json` that already uses `routes`.** Vercel ignores `rewrites` in such a file without an error. Add this as the first entry, above `{ "handle": "filesystem" }`, then deploy to Production:
 
