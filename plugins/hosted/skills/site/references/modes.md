@@ -8,7 +8,20 @@ Prefer a subpath (`/resources`): the articles then sit on the client's own domai
 | A builder (Framer, Webflow, Lovable, Wix …) whose DNS is on Cloudflare, root record proxied (orange cloud) | `subpath_cloudflare` | `https://{domain}/resources` | Only if an admin hands it over as a Worker secret |
 | Nobody can change routing, but someone can add a DNS record | `subdomain` | `https://resources.{domain}` | Never |
 
-If the operator doesn't know where the site is hosted, the homepage's headers say: `curl -sI https://{domain}/`.
+## From `hosted_detect`
+
+`hosted_detect(domain)` reads public DNS, the same read the dashboard's hosted setup shows.
+
+| It found | Suggest |
+|---|---|
+| `cloudflareProxied: true` | `subpath_cloudflare`: Cloudflare is in front, so a Worker runs. |
+| `host: vercel` or `netlify`, not proxied | `subpath_host`: a rewrite on that host. A Worker would not run until the root record is proxied. |
+| `cloudflareDns: true`, no host, not proxied | Ask: the root record can be proxied for a Worker (`subpath_cloudflare`), or it's their own server (`subpath_host`), or `subdomain`. |
+| Nothing | Ask where it's hosted (below). |
+
+A builder (Framer, Webflow, Lovable, Wix …) shows up as nothing or as Cloudflare. Never pick `subdomain` just because the site is on a builder: behind proxied Cloudflare it takes `subpath_cloudflare`.
+
+If detection found nothing and the operator doesn't know where the site is hosted, the homepage's headers say: `curl -sI https://{domain}/`.
 - `x-vercel-id` means Vercel.
 - `x-nf-request-id` means Netlify.
 - `cf-ray` means Cloudflare is in front; the `server` header names what's behind it.
