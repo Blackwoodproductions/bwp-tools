@@ -12,22 +12,39 @@ Two rules hold for every subpath host:
 
 When the block is live, run `hosted:check {domain}`.
 
-The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B). The Apache block has not run yet.
+The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B); all three Vercel forms were walked again on 2026-11-03. The Apache block has not run yet.
 
 ## Vercel (`subpath_host`)
 
-In `vercel.json`, as the first entries of `rewrites`:
+Three places, walked live on 2026-11-03. Ask the client where they change routing, and recommend the first. Ways 1 and 3 put `{BASE}` inside a regex, so escape its regex characters: a `.` becomes `\.` in the dashboard field, and `\\.` inside way 3's JSON string. Dashboard-made bases are `[a-z0-9-]` and need nothing.
+
+**1. A routing rule in Vercel's dashboard (recommended).** No code, no redeploy, works on Hobby, and project rules run before the deployment's catch-all and files. Project → CDN → Routing Rules → Create Route:
+- If Request Path → **Regex**: `^{BASE}(/.*)?$`
+- Then → **Rewrite** (not Redirect) to: `https://sites.imagehosting.space/t/{TENANT}$1`
+- Name it, Create Rule, then **Publish**: a Draft does nothing.
+
+Vercel fills in only `$1`. Its Generate Rule AI and the field placeholder both write `{BASE}/:path*` → `…/:path*`, which Vercel sends literally, so every page gets the renderer's 404 (`not_deployed`). Pattern with `$1` drops the trailing slash; Regex keeps it.
+
+**2. `vercel.json` with `rewrites`** (or no `vercel.json` yet), as the first entries of `rewrites`:
 
 ```json
 {
   "rewrites": [
-    { "source": "{BASE}/:path*", "destination": "https://sites.imagehosting.space/t/{TENANT}/:path*" },
-    { "source": "{BASE}", "destination": "https://sites.imagehosting.space/t/{TENANT}/" }
+    { "source": "{BASE}", "destination": "https://sites.imagehosting.space/t/{TENANT}/" },
+    { "source": "{BASE}/:path(.*)", "destination": "https://sites.imagehosting.space/t/{TENANT}/:path" }
   ]
 }
 ```
 
-Merge these into the existing `rewrites`; don't replace the file. Then redeploy. Vercel can't send the origin secret from a secret store, so this connection runs with `require_origin_secret=false`.
+Merge these into the existing `rewrites`; don't replace the file. A catch-all goes after them. Deploy to Production (a Preview doesn't serve the domain). Never `{BASE}/:path*`: behind a catch-all it misses every address ending in `/` (`{BASE}/` itself, Premium SEO's old `{slug}-{id}/` article links, the BRON crawler's probe), and the check fails with `slash_unrouted`.
+
+**3. `vercel.json` that already uses `routes`.** Vercel ignores `rewrites` in such a file without an error. Add this as the first entry, above `{ "handle": "filesystem" }`, then deploy to Production:
+
+```json
+{ "src": "^{BASE}(/.*)?$", "dest": "https://sites.imagehosting.space/t/{TENANT}$1" },
+```
+
+Vercel can't send the origin secret from a secret store, so this connection runs with `require_origin_secret=false`.
 
 ## Netlify (`subpath_host`)
 

@@ -81,18 +81,18 @@ CADE refuses some inputs with a message that says what to change:
 
 ## Step 4: the rewrite
 
-The assistant fills in the Vercel recipe for the client's developer:
+The assistant fills in the Vercel recipe for the client. It recommends a routing rule in Vercel's dashboard (CDN → Routing Rules: Regex `^/resources(/.*)?$` → Rewrite to `https://sites.imagehosting.space/t/example-clinic.test$1`, then Publish), which needs no redeploy. For a client who keeps routing in `vercel.json`, it gives:
 
 ```json
 {
   "rewrites": [
-    { "source": "/resources/:path*", "destination": "https://sites.imagehosting.space/t/example-clinic.test/:path*" },
-    { "source": "/resources", "destination": "https://sites.imagehosting.space/t/example-clinic.test/" }
+    { "source": "/resources", "destination": "https://sites.imagehosting.space/t/example-clinic.test/" },
+    { "source": "/resources/:path(.*)", "destination": "https://sites.imagehosting.space/t/example-clinic.test/:path" }
   ]
 }
 ```
 
-These go **first** in the existing `rewrites`, above the app's own `/(.*) → /index.html`, then the site is redeployed. The skill stops here until you say it's deployed.
+These go **first** in the existing `rewrites`, above the app's own `/(.*) → /index.html`, then the site is deployed to Production. A file that uses `routes` gets a `routes` entry instead. The skill stops here until you say it's live.
 
 Other hosts (Netlify, a Cloudflare Worker, nginx, Apache, a subdomain's DNS record) have their own block in `plugins/hosted/skills/site/references/edge-recipes.md`.
 
