@@ -1,6 +1,6 @@
 {
   "name": "hosted",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Onboard client sites onto CADE's hosted renderer: an overview of every hosted site, per-site setup (the connection and the exact rewrite or DNS change for the client's host) and the rewrite check that names who answered and the fix. Actions go through the cade-mcp connector (company Google sign-in); creating a connection is for admins.",
   "author": { "name": "rascoder_og" }
 }
