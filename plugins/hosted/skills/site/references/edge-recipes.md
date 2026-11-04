@@ -12,7 +12,7 @@ Two rules hold for every subpath host:
 
 When the block is live, run `hosted:check {domain}`.
 
-The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B); all three Vercel forms were walked again on 2026-11-03. The Apache block has not run yet.
+The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B); all three Vercel forms were walked again on 2026-11-03, and both Netlify forms on 2026-11-04. The Apache block has not run yet.
 
 ## Vercel (`subpath_host`)
 
@@ -48,7 +48,17 @@ Vercel can't send the origin secret from a secret store, so this connection runs
 
 ## Netlify (`subpath_host`)
 
-In `netlify.toml`, above any `from = "/*"` rule:
+Two places, walked live on 2026-11-04. Netlify has no rules editor in its dashboard, so both are a file in the deploy. Recommend the first.
+
+**1. A `_redirects` file (recommended).** Netlify reads it before `netlify.toml`, it is one line, and it works with drag-and-drop deploys. Open or create `_redirects` in the folder Netlify publishes (`public/` for Vite, Create React App and Astro; otherwise next to `index.html`) and paste this as its **first line**:
+
+```
+{BASE}/*  https://sites.imagehosting.space/t/{TENANT}/:splat  200!
+```
+
+`{BASE}/*` also matches bare `{BASE}`, so no second line is needed. Keep `200!`: without `!` a page the site already has at `{BASE}` wins (`base_shadowed`); a 301 instead of 200 sends visitors away, and browsers cache it. Without `/:splat` every address gets the same page (`splat_missing`).
+
+**2. `netlify.toml`.** First look for a `_redirects` file with a `/*` line: it is read first and wins over any toml rule (`catch_all_first`), so use way 1 instead. Otherwise add this block above any `from = "/*"` rule:
 
 ```toml
 [[redirects]]
@@ -56,22 +66,9 @@ In `netlify.toml`, above any `from = "/*"` rule:
   to = "https://sites.imagehosting.space/t/{TENANT}/:splat"
   status = 200
   force = true
-
-[[redirects]]
-  from = "{BASE}"
-  to = "https://sites.imagehosting.space/t/{TENANT}/"
-  status = 200
-  force = true
 ```
 
-The same in a `_redirects` file, as its first lines:
-
-```
-{BASE}/*  https://sites.imagehosting.space/t/{TENANT}/:splat  200!
-{BASE}    https://sites.imagehosting.space/t/{TENANT}/        200!
-```
-
-Then redeploy. No origin secret, as for Vercel.
+For both: deploy, then check that the top deploy under **Deploys** says **Published**. With auto publishing locked, a "Deploy successful" build stays unpublished and the old deploy keeps serving (`catch_all_first`); use *Publish deploy*. A zip dropped on Deploys runs as a build too. No origin secret, as for Vercel. An Edge Function proxy also works, but its responses are not cached and it needs a build, so don't offer it.
 
 ## Cloudflare Worker (`subpath_cloudflare`)
 
