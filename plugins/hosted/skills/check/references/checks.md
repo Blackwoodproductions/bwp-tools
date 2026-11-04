@@ -10,7 +10,7 @@ CADE probes `{public base}/.hr/status?nonce=…`.
   - `nginx` or `apache`: the `server` header;
   - `other`: anything else, builders included.
 - The renderer marks every response for a known tenant with `x-hr-tenant: {domain}`; `answered_by` still names the host in front of it.
-- In the subpath modes, once the status page passes, CADE also probes `{BASE}/.hr/status/`, `{BASE}` itself (it passes only when `x-hr-tenant` names the domain) and `/.hr/status` at the site root, which only the renderer can answer. The first failure is reported in that order.
+- In the subpath modes, once the status page passes, CADE also probes `{BASE}/.hr/status/`, `{BASE}` itself (it passes only when `x-hr-tenant` names the domain, and is skipped when the status page came back without that header) and `/.hr/status` at the site root, which only the renderer can answer. The first failure is reported in that order.
 
 Recipes are in `hosted:site` → `references/edge-recipes.md`.
 
