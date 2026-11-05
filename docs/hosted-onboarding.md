@@ -1,6 +1,6 @@
 # Onboard a site on the hosted renderer
 
-A client's site, `example-clinic.test`, is a single-page app on Vercel. They want CADE's articles at `https://example-clinic.test/resources`, served by CADE's hosted renderer, with no WordPress involved.
+A client's site, `example-clinic.test`, is a single-page app on Vercel. They want CADE's articles at `https://example-clinic.test/articles`, served by CADE's hosted renderer, with no WordPress involved.
 
 This tutorial takes the site from nothing to live:
 1. read the facts;
@@ -45,8 +45,8 @@ Then it asks three questions, with the detection as the suggested answer to the 
 
 | Question | Answer here | Why |
 |---|---|---|
-| Public base | `https://example-clinic.test/resources` | A subpath keeps the articles on the client's own domain. Use `https://resources.example-clinic.test` only when nobody can change the site's routing. |
-| Where the site is hosted | Vercel | `hosted_detect` found Vercel (with nothing found, `curl -sI https://example-clinic.test/` shows `x-vercel-id`). Vercel, Netlify and their own server take `subpath_host`; a builder behind Cloudflare takes `subpath_cloudflare`; a DNS-only change takes `subdomain`. |
+| Public base | `https://example-clinic.test/articles` | A subpath keeps the articles on the client's own domain. Use `https://articles.example-clinic.test` only when nobody can change the site's routing. |
+| Where the site is hosted | Vercel | `hosted_detect` found Vercel (with nothing found, `curl -sI https://example-clinic.test/` shows `x-vercel-id`). Vercel, Netlify, Railway (a route in the app) and their own server take `subpath_host`; a builder behind Cloudflare takes `subpath_cloudflare`; a DNS-only change takes `subdomain`. |
 | Origin secret | No | The secret is shared by every client and Vercel can only carry it written into `vercel.json`, which would publish it in the client's repo. The renderer's `robots.txt` and the articles' canonical already keep search engines on the client's address. |
 
 ## Step 3: create the connection
@@ -55,7 +55,7 @@ First the dry run. It sends nothing:
 
 ```
 hosted_connect("example-clinic.test", confirm_domain="example-clinic.test", mode="subpath_host",
-               public_base="https://example-clinic.test/resources", require_origin_secret=false, dry_run=true)
+               public_base="https://example-clinic.test/articles", require_origin_secret=false, dry_run=true)
 ```
 
 ```json
@@ -63,7 +63,7 @@ hosted_connect("example-clinic.test", confirm_domain="example-clinic.test", mode
   "dry_run": true,
   "would_create": {
     "platform_type": "hosted",
-    "site_url": "https://example-clinic.test/resources",
+    "site_url": "https://example-clinic.test/articles",
     "platform_data": { "mode": "subpath_host", "require_origin_secret": false }
   },
   "existing": []
@@ -81,20 +81,20 @@ CADE refuses some inputs with a message that says what to change:
 
 ## Step 4: the rewrite
 
-The assistant fills in the Vercel recipe for the client. It recommends a routing rule in Vercel's dashboard (CDN → Routing Rules: Regex `^/resources(/.*)?$` → Rewrite to `https://sites.imagehosting.space/t/example-clinic.test$1`, then Publish), which needs no redeploy. For a client who keeps routing in `vercel.json`, it gives:
+The assistant fills in the Vercel recipe for the client. It recommends a routing rule in Vercel's dashboard (CDN → Routing Rules: Regex `^/articles(/.*)?$` → Rewrite to `https://sites.imagehosting.space/t/example-clinic.test$1`, then Publish), which needs no redeploy. For a client who keeps routing in `vercel.json`, it gives:
 
 ```json
 {
   "rewrites": [
-    { "source": "/resources", "destination": "https://sites.imagehosting.space/t/example-clinic.test/" },
-    { "source": "/resources/:path(.*)", "destination": "https://sites.imagehosting.space/t/example-clinic.test/:path" }
+    { "source": "/articles", "destination": "https://sites.imagehosting.space/t/example-clinic.test/" },
+    { "source": "/articles/:path(.*)", "destination": "https://sites.imagehosting.space/t/example-clinic.test/:path" }
   ]
 }
 ```
 
 These go **first** in the existing `rewrites`, above the app's own `/(.*) → /index.html`, then the site is deployed to Production. A file that uses `routes` gets a `routes` entry instead. The skill stops here until you say it's live.
 
-Other hosts (Netlify, a Cloudflare Worker, nginx, Apache, a subdomain's DNS record) have their own block in `plugins/hosted/skills/site/references/edge-recipes.md`.
+Other hosts (Netlify, a Cloudflare Worker, nginx, Apache, a Node / Express app on Railway, a subdomain's DNS record) have their own block in `plugins/hosted/skills/site/references/edge-recipes.md`.
 
 ## Step 5: check it
 
@@ -108,10 +108,10 @@ The developer deployed to a preview, not to production:
 
 ```
 FAIL edge: not_deployed · vercel
-Vercel answered HTTP 404: the /resources rewrite is not deployed yet, or its path is wrong
+Vercel answered HTTP 404: the /articles rewrite is not deployed yet, or its path is wrong
 ```
 
-`answered_by: vercel` says the request reached Vercel and Vercel itself had no rule for `/resources`. The fix is to promote the deploy that carries the rule. Other answers point elsewhere:
+`answered_by: vercel` says the request reached Vercel and Vercel itself had no rule for `/articles`. The fix is to promote the deploy that carries the rule. Other answers point elsewhere:
 - `catch_all_first`: the rule sits below the app's catch-all.
 - `wrong_tenant · renderer`: a typo in `/t/example-clinic.test/`.
 - `route_too_broad`: the rule covers the whole site.
@@ -124,7 +124,7 @@ After the promote, "check it again":
 PASS edge · PASS renderer
 ```
 
-The site is live: `https://example-clinic.test/resources` lists the client's articles, and each article names itself canonical on the client's domain.
+The site is live: `https://example-clinic.test/articles` lists the client's articles, and each article names itself canonical on the client's domain.
 
 ## Step 6: keep an eye on it
 
@@ -132,6 +132,6 @@ The site is live: `https://example-clinic.test/resources` lists the client's art
 
 | domain | mode | public base | check | next action |
 |---|---|---|---|---|
-| example-clinic.test | subpath_host | https://example-clinic.test/resources | healthy 2 min ago | Live; nothing to do. |
+| example-clinic.test | subpath_host | https://example-clinic.test/articles | healthy 2 min ago | Live; nothing to do. |
 
 Nothing re-checks a site on its own yet. "Hosted watch check" runs the check on every site; do it after a client redeploys.
