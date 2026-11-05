@@ -17,6 +17,6 @@ The `hosted` plugin onboards a client site onto CADE's hosted renderer through t
 
 | Tutorial | When you need it |
 |---|---|
-| [Onboard a site on the hosted renderer](hosted-onboarding.md) | A client's articles should appear under their own domain (`/resources` or `resources.`) without WordPress. |
+| [Onboard a site on the hosted renderer](hosted-onboarding.md) | A client's articles should appear under their own domain (`/articles` or `articles.`) without WordPress. |
 
 All domain names, ids and keywords in these pages are made-up examples. Look up the real ones with the SQL shown in each tutorial.

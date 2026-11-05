@@ -2,7 +2,7 @@
 
 Fill in two values before handing a block over:
 - `{TENANT}` is the domain exactly as CADE has it, e.g. `example-clinic.test`, never `www.`. A typo there is the `wrong_tenant` failure.
-- `{BASE}` is the public base's path, e.g. `/resources`.
+- `{BASE}` is the public base's path, e.g. `/articles`.
 
 The renderer's host is always `sites.imagehosting.space`, and every block sends `{BASE}` and everything under it there.
 
@@ -137,7 +137,7 @@ At the client's DNS provider:
 
 | Type | Name | Value | Note |
 |---|---|---|---|
-| CNAME | `resources` (the subdomain's label) | `sites.imagehosting.space` | On Cloudflare: **DNS only** (grey cloud). Proxied, certificate issue and renewal fail (`subdomain_proxied`). |
+| CNAME | `articles` (the subdomain's label) | `sites.imagehosting.space` | On Cloudflare: **DNS only** (grey cloud). Proxied, certificate issue and renewal fail (`subdomain_proxied`). |
 | CAA | `{TENANT}` | `0 issue "letsencrypt.org"` | Only if the domain already has CAA records. With none, nothing is needed. |
 
 The first check after the record resolves also triggers the certificate. A `unreachable_dns` or `unreachable_tls` right after the change usually means "wait for the record's TTL", not "undo it".
