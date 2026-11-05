@@ -1,6 +1,6 @@
 ---
 name: check
-description: Check a hosted site's rewrite rules or DNS and explain each failure: who answered (the renderer, Vercel, Netlify, Cloudflare, nginx, Apache), whether the route reached the renderer, the tenant resolved and the origin secret arrived, and the exact fix for that host. Use for "check the rewrite rules for {domain}", "is {domain} live on hosted", "why is {domain} unhealthy", "verify hosted {domain}", "check it again".
+description: Check a hosted site's rewrite rules or DNS and explain each failure: who answered (the renderer, Vercel, Netlify, Railway, Cloudflare, nginx, Apache), whether the route reached the renderer, the tenant resolved and the origin secret arrived, and the exact fix for that host. Use for "check the rewrite rules for {domain}", "is {domain} live on hosted", "why is {domain} unhealthy", "verify hosted {domain}", "check it again".
 ---
 
 # hosted: check

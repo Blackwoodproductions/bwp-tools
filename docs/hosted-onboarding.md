@@ -46,7 +46,7 @@ Then it asks three questions, with the detection as the suggested answer to the 
 | Question | Answer here | Why |
 |---|---|---|
 | Public base | `https://example-clinic.test/articles` | A subpath keeps the articles on the client's own domain. Use `https://articles.example-clinic.test` only when nobody can change the site's routing. |
-| Where the site is hosted | Vercel | `hosted_detect` found Vercel (with nothing found, `curl -sI https://example-clinic.test/` shows `x-vercel-id`). Vercel, Netlify and their own server take `subpath_host`; a builder behind Cloudflare takes `subpath_cloudflare`; a DNS-only change takes `subdomain`. |
+| Where the site is hosted | Vercel | `hosted_detect` found Vercel (with nothing found, `curl -sI https://example-clinic.test/` shows `x-vercel-id`). Vercel, Netlify, Railway (a route in the app) and their own server take `subpath_host`; a builder behind Cloudflare takes `subpath_cloudflare`; a DNS-only change takes `subdomain`. |
 | Origin secret | No | The secret is shared by every client and Vercel can only carry it written into `vercel.json`, which would publish it in the client's repo. The renderer's `robots.txt` and the articles' canonical already keep search engines on the client's address. |
 
 ## Step 3: create the connection
@@ -94,7 +94,7 @@ The assistant fills in the Vercel recipe for the client. It recommends a routing
 
 These go **first** in the existing `rewrites`, above the app's own `/(.*) → /index.html`, then the site is deployed to Production. A file that uses `routes` gets a `routes` entry instead. The skill stops here until you say it's live.
 
-Other hosts (Netlify, a Cloudflare Worker, nginx, Apache, a subdomain's DNS record) have their own block in `plugins/hosted/skills/site/references/edge-recipes.md`.
+Other hosts (Netlify, a Cloudflare Worker, nginx, Apache, a Node / Express app on Railway, a subdomain's DNS record) have their own block in `plugins/hosted/skills/site/references/edge-recipes.md`.
 
 ## Step 5: check it
 

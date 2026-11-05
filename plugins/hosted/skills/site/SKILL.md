@@ -1,6 +1,6 @@
 ---
 name: site
-description: Onboard one site onto CADE's hosted renderer. Read its facts, agree the public base and mode, create the hosted connection (admins), and hand over the exact rewrite or DNS change for the client's host (Vercel, Netlify, Cloudflare Worker, nginx, Apache, DNS). Use for "onboard {domain} on hosted", "set up the hosted renderer for {domain}", "connect {domain} to hosted", "edge setup for {domain} on Vercel".
+description: Onboard one site onto CADE's hosted renderer. Read its facts, agree the public base and mode, create the hosted connection (admins), and hand over the exact rewrite or DNS change for the client's host (Vercel, Netlify, Cloudflare Worker, nginx, Apache, Node / Express on Railway, DNS). Use for "onboard {domain} on hosted", "set up the hosted renderer for {domain}", "connect {domain} to hosted", "edge setup for {domain} on Vercel".
 ---
 
 # hosted: site

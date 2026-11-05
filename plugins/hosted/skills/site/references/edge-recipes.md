@@ -12,7 +12,7 @@ Two rules hold for every subpath host:
 
 When the block is live, run `hosted:check {domain}`.
 
-The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B); all three Vercel forms were walked again on 2026-11-03, and both Netlify forms on 2026-11-04. The Apache block has not run yet.
+The Vercel, Netlify, Cloudflare Worker and nginx blocks are the ones proved on real hosts in the hosted-renderer proof (Tier B); all three Vercel forms were walked again on 2026-11-03, and both Netlify forms on 2026-11-04. The Apache block has not run yet. The Node / Express block passed against the live renderer from a local Express app on 2026-11-05, but has not run on a real host (Railway) yet.
 
 ## Vercel (`subpath_host`)
 
@@ -130,6 +130,40 @@ RedirectMatch 301 "^{BASE}$" "{BASE}/"
 Reload Apache (`apachectl configtest && apachectl graceful`). Tell the operator this block is unproven: if `hosted:check` fails, the answer it gives (who answered, which code) is the starting point.
 
 Only if the secret is required: `RequestHeader set x-cade-origin "${CADE_ORIGIN_SECRET}"`, with the variable set in Apache's environment (`envvars`) by an admin, never in the file.
+
+## Node / Express (`subpath_host`, Railway)
+
+For a site served by its own Node server, Railway included. Railway's edge can't rewrite or proxy a path (its Edge rules only block, allow, challenge, redirect or override caching), so the route goes in the app. Node 18+, Express 4 or 5, no dependency. Add this right after `const app = express()`:
+
+```js
+// The hosted articles: everything under {BASE} comes from the renderer. Keep this above express.static and your SPA fallback.
+const DROP_REQUEST = new Set(["host", "connection", "content-length", "accept-encoding"]);
+const DROP_RESPONSE = new Set(["content-encoding", "content-length", "transfer-encoding", "connection"]);
+app.use("{BASE}", async (req, res) => {
+  try {
+    const upstream = await fetch(`https://sites.imagehosting.space/t/{TENANT}${req.url}`, {
+      method: req.method,
+      headers: Object.fromEntries(Object.entries(req.headers).filter(([name]) => !DROP_REQUEST.has(name))),
+      body: ["GET", "HEAD"].includes(req.method) ? undefined : req,
+      duplex: "half",
+      redirect: "manual",
+    });
+    res.status(upstream.status);
+    upstream.headers.forEach((value, name) => DROP_RESPONSE.has(name) || res.setHeader(name, value));
+    res.end(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).end();
+  }
+});
+```
+
+- **Order:** mount it **above** `express.static` and the SPA fallback (the route that sends `index.html` for every path). Below them, the app answers with its own page: `catch_all_first`.
+- `app.use("{BASE}", …)` covers bare `{BASE}`, `{BASE}/` and everything under it, `{BASE}/media/*` included, but not `{BASE}-old`. Express strips `{BASE}` from `req.url`, so nothing else is needed.
+- Keep the `try`/`catch`: if the renderer can't be reached, the route answers 502 and the rest of the app keeps serving. Without it, an Express 4 app crashes.
+- Redeploy the service. Railway redeploys on a push to the branch it watches.
+- No origin secret: the route doesn't send `x-cade-origin`.
+
+Tell the operator this block is unproven on a real host: it passed 10 of 10 checks from a local Express app (4 and 5) against the live renderer, but no Railway site runs it yet. If `hosted:check` fails, the answer it gives (who answered, which code) is the starting point.
 
 ## DNS (`subdomain`)
 
