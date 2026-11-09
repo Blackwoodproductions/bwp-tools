@@ -8,7 +8,8 @@ description: >-
   BRON/SEOMoney work for what only seo-service knows or writes: bwp domain
   facts, link context, the bubblefeed content queue, a bubblefeed row's
   article/status, the reconnect crawl, retract/restore a row, fix a row's cut-
-  over url. Triggers: "call seo-service", "domain facts for {domain}", "link
+  over url, mint a CADE service key. Triggers: "call seo-service", "mint a key
+  for {service}", "domain facts for {domain}", "link
   context", "content queue", "bubblefeed row {id}", "reconnect {domain}",
   "retract keyword {id}", "set the url on keyword {id}", "list seo-service
   endpoints", "seo-api". Live production write surface over customer-facing bwp
@@ -27,7 +28,7 @@ python $S/list_endpoints.py --service seo --filter internal          # live Open
 ```
 
 - **Envs:** `prod` (default) and `local` (`http://localhost:3003`). There is **no staging**: CADE staging talks to the prod seo-service, so `--env stg` is refused.
-- **Auth:** `X-API-Key` only. The key opens every `/internal/*` route, reads and writes alike.
+- **Auth:** `X-API-Key` only. The key opens every `/internal/*` route, reads and writes alike. `/internal/admin/*` also needs `--actor <email>` (sent as `X-Actor-Email`): a live `bwp_register` account with `adminlevel` 10, else 403.
 - Responses are bare JSON (no `{data}` envelope). Errors are Nest's `{statusCode, message}`.
 - Rows are addressed by the **bwp domain id** (`domainId` from `cade-domain-facts`), never the name, and by **table**: `keywords` = `bwp_bubblefeed`, `supporting-keywords` = `bwp_bubblefeedsupport`. The two tables' ids collide, so never guess the table from an id.
 
@@ -46,6 +47,24 @@ python $S/list_endpoints.py --service seo --filter internal          # live Open
 | PUT `.../{keywords,supporting-keywords}/:kw/content`, `.../keywords/:kw/feedtext`, `.../:kw/summary` | CADE's write-back — normally CADE's job, not a hand call | yes |
 | DELETE `.../{keywords,supporting-keywords}/:kw/content` | blanks all bodies, marks row `deleted` | **destructive** |
 | POST `/internal/notifications/email` | sends a real customer email | **never by hand** |
+| GET `/internal/admin/api-keys` (`--actor`) | every service key, revoked ones included; never the raw key | — |
+| POST `/internal/admin/api-keys` (`--actor`) `{label, scopes, allDomains: true \| userId}` | mint a CADE service key; see below | yes |
+| DELETE `/internal/admin/api-keys/:id` (`--actor`) | revoke a service key; CADE refuses it within a minute (verdict cache) | **destructive** |
+
+## Mint a CADE service key
+
+seo-service mints and stores every CADE API key; CADE asks it about each request (`/internal/api-keys/introspect`). One live key per calling service, labelled with the service's name (`feed-app`, `services-app`, `hosted-renderer`, `seo-service`), so a revoke never takes out a second caller.
+
+```bash
+python $S/call_api.py --service seo GET /internal/admin/api-keys --actor you@blackwoodproductions.com   # is there one already?
+python $S/call_api.py --service seo POST /internal/admin/api-keys --actor you@blackwoodproductions.com --confirm \
+  --body '{"label":"seo-service","allDomains":true,"scopes":["domains:read","domains:write"]}'
+```
+
+- **Scopes:** the least the caller uses. Each CADE route names its own: `require_domain_service_scope(Scope.X)` in `app/api/v1/endpoints/`. `allDomains: true` for a platform service, `userId` for one customer's domains.
+- **The raw key exists in this one response.** The script writes it to `<run>.key` (mode 0600, no trailing newline) and prints `***` everywhere else; stderr names the file. Never echo it.
+- **Check it before storing it** (200, not 401/403): `curl -s -o /dev/null -w '%{http_code}\n' -H "X-API-Key: $(cat <run>.key)" https://seo-acg-api.prod.seosara.ai/api/v1/domains/<a-domain>/platform-connections`
+- **Store, then destroy:** `gh secret set <NAME> --env <svc>-production -R Blackwoodproductions/seo-money-deployments < <run>.key && shred -u <run>.key`. `<NAME>` is what the service's `.github/workflows/deploy-<svc>.yml` reads (e.g. `SEO_SERVICE_CADE_API_KEY`). The secret reaches the box only at that service's next deploy.
 
 User-scoped routes (`/domains/...`) also need a signed `X-Acting-Context` token this client can't mint. Stick to `/internal`.
 
