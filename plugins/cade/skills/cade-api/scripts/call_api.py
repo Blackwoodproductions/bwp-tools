@@ -25,6 +25,11 @@ Usage:
     python call_api.py GET /domains/example.com/keywords --env stg
     python call_api.py POST /domains/example.com/keywords --body '{...}' --dry-run
     python call_api.py --service seo GET /internal/cade-domain-facts --query '{"domain":"example.com"}'
+    python call_api.py --service seo POST /internal/admin/api-keys --actor you@blackwoodproductions.com \
+        --body '{"label":"feed-app","allDomains":true,"scopes":["domains:read"]}' --confirm
+
+A minted key (a top-level `key` string) exists in that one response: it goes to
+`<run>.key` (mode 0600) and is `***` on stdout and in the run log.
 """
 
 from __future__ import annotations
@@ -215,12 +220,26 @@ def _slugify_endpoint(method: str, path: str) -> str:
     return f"{cleaned}-{method.lower()}"
 
 
-def _save_run(inputs: dict[str, Any], outputs: dict[str, Any]) -> Path:
+def _split_secret(body: Any) -> tuple[Any, str | None]:
+    """A minted API key (seo-service's api-keys routes answer it as a top-level `key`) is shown once, in this response.
+    Returns the body with it masked, for stdout and the run log, and the raw key for its own file."""
+    if isinstance(body, dict) and isinstance(body.get("key"), str) and body["key"]:
+        return {**body, "key": "***"}, body["key"]
+    return body, None
+
+
+def _save_run(inputs: dict[str, Any], outputs: dict[str, Any], secret: str | None = None) -> Path:
+    """`secret` goes to `<run>.key` FIRST, so a failed log write cannot lose the only copy of a minted key."""
     log_dir = run_log_dir(inputs["service"])
     log_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     slug = _slugify_endpoint(inputs["method"], inputs["path"])
     out_path = log_dir / f"{ts}-{slug}.json"
+    if secret is not None:
+        # 0600 from creation, never a later chmod; no trailing newline, so `gh secret set NAME < file` stores it exactly.
+        fd = os.open(out_path.with_suffix(".key"), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(secret)
     out_path.write_text(
         json.dumps({"inputs": inputs, "outputs": outputs}, indent=2, default=str)
     )
@@ -254,6 +273,7 @@ def run(
     timeout: float | None,
     dry_run: bool,
     service: str = "cade",
+    actor: str | None = None,
 ) -> int:
     method = method.upper()
     if method not in ALL_METHODS:
@@ -282,6 +302,9 @@ def run(
         headers["X-API-Key"] = key
     else:
         headers["X-WordPress-Plugin-Key"] = key
+    if actor:
+        # seo-service's /internal admin routes act as this staff admin (adminlevel 10); not a secret, so it is logged.
+        headers["X-Actor-Email"] = actor
 
     inputs: dict[str, Any] = {
         "service": service,
@@ -310,6 +333,7 @@ def run(
 
     req = urlrequest.Request(url, data=data_bytes, headers=headers, method=method)
     status, resp_body, resp_headers, duration_ms, error = _do_call(req, timeout)
+    resp_body, secret = _split_secret(resp_body)
 
     outputs: dict[str, Any] = {
         "status_code": status,
@@ -321,8 +345,10 @@ def run(
         "error": error,
     }
 
-    log_path = _save_run(inputs, outputs)
+    log_path = _save_run(inputs, outputs, secret)
     print(f"run saved: {log_path}", file=sys.stderr)
+    if secret is not None:
+        print(f"raw key (shown nowhere else): {log_path.with_suffix('.key')} -- store it, then shred -u it", file=sys.stderr)
     print(json.dumps(outputs, indent=2, default=str))
 
     if error is not None:
@@ -420,6 +446,10 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--actor",
+        help="Sends X-Actor-Email: the staff admin (adminlevel 10) seo-service's /internal admin routes act as.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print the request that would be sent without calling the API.",
@@ -441,6 +471,7 @@ def main() -> int:
             timeout=args.timeout,
             dry_run=args.dry_run,
             service=args.service,
+            actor=args.actor,
         )
     except (ValueError, RuntimeError, KeyError, FileNotFoundError) as e:
         print(f"error: {e}", file=sys.stderr)
