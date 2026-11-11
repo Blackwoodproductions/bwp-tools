@@ -1,6 +1,7 @@
 # Check codes
 
-CADE probes `{public base}/.hr/status?nonce=…`.
+CADE probes `{public base}/.hr/status?nonce=…` with a signed token in the `x-request-token` request header.
+- The status page answers only that signed probe. Opening it in a browser, or with `curl`, gets the site's own 404 page whether or not the rule works, so never ask a client to open it: run the check.
 - Its status page echoes the nonce, the tenant it resolved and whether the origin secret arrived.
 - When something else answers, CADE reads the response headers to tell who answered (`answered_by`):
   - `renderer`: the renderer's own "Not found";
@@ -10,7 +11,7 @@ CADE probes `{public base}/.hr/status?nonce=…`.
   - `cloudflare`: `cf-ray`;
   - `nginx` or `apache`: the `server` header;
   - `other`: anything else, builders included.
-- The renderer marks every response for a known tenant with `x-hr-tenant: {domain}`; `answered_by` still names the host in front of it.
+- The renderer marks a response with `x-hr-tenant: {domain}` for CADE's signed probe only, never for a visitor; `answered_by` still names the host in front of it. On a page a CDN cached, CADE reads the site's own `{class_prefix}-main` element instead.
 - In the subpath modes, once the status page passes, CADE also probes `{BASE}/.hr/status/`, `{BASE}` itself (it passes only when `x-hr-tenant` names the domain, and is skipped when the status page came back without that header) and `/.hr/status` at the site root, which only the renderer can answer. The first failure is reported in that order.
 
 Recipes are in `hosted:site` → `references/edge-recipes.md`.

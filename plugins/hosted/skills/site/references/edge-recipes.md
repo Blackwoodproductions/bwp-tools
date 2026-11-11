@@ -1,7 +1,8 @@
 # Edge setup per host
 
-Fill in two values before handing a block over:
-- `{TENANT}` is the domain exactly as CADE has it, e.g. `example-clinic.test`, never `www.`. A typo there is the `wrong_tenant` failure.
+Fill in three values before handing a block over:
+- `{KEY}` is the connection's `path_key` from `hosted_sites`: 24 random characters that name the tenant in the destination (`/t/{KEY}/`). A typo there is the `wrong_tenant` failure. Never put the domain there: `/t/<domain>/` lets anyone ask our server whether a domain is a client, and stops answering once probes are required. If `hosted_sites` shows no `path_key`, CADE is older than the key: stop and say so.
+- `{TENANT}` is the domain exactly as CADE has it, e.g. `example-clinic.test`, never `www.`. It is only used where a block names the client's own zone or route.
 - `{BASE}` is the public base's path, e.g. `/articles`.
 
 The renderer's host is always `sites.imagehosting.space`, and every block sends `{BASE}` and everything under it there.
@@ -20,7 +21,7 @@ Three places, walked live on 2026-11-03. Ask the client where they change routin
 
 **1. A routing rule in Vercel's dashboard (recommended).** No code, no redeploy, works on Hobby, and project rules run before the deployment's catch-all and files. Project → CDN → Routing Rules → Create Route:
 - If Request Path → **Regex**: `^{BASE}(/.*)?$`
-- Then → **Rewrite** (not Redirect) to: `https://sites.imagehosting.space/t/{TENANT}$1`
+- Then → **Rewrite** (not Redirect) to: `https://sites.imagehosting.space/t/{KEY}$1`
 - Name it, Create Rule, then **Publish**: a Draft does nothing.
 
 Vercel fills in only `$1`. Its Generate Rule AI and the field placeholder both write `{BASE}/:path*` → `…/:path*`, which Vercel sends literally, so every page gets the renderer's 404 (`not_deployed`). Pattern with `$1` drops the trailing slash; Regex keeps it.
@@ -30,8 +31,8 @@ Vercel fills in only `$1`. Its Generate Rule AI and the field placeholder both w
 ```json
 {
   "rewrites": [
-    { "source": "{BASE}", "destination": "https://sites.imagehosting.space/t/{TENANT}/" },
-    { "source": "{BASE}/:path(.*)", "destination": "https://sites.imagehosting.space/t/{TENANT}/:path" }
+    { "source": "{BASE}", "destination": "https://sites.imagehosting.space/t/{KEY}/" },
+    { "source": "{BASE}/:path(.*)", "destination": "https://sites.imagehosting.space/t/{KEY}/:path" }
   ]
 }
 ```
@@ -41,7 +42,7 @@ Merge these into the existing `rewrites`; don't replace the file. A catch-all go
 **3. `vercel.json` that already uses `routes`.** Vercel ignores `rewrites` in such a file without an error. Add this as the first entry, above `{ "handle": "filesystem" }`, then deploy to Production:
 
 ```json
-{ "src": "^{BASE}(/.*)?$", "dest": "https://sites.imagehosting.space/t/{TENANT}$1" },
+{ "src": "^{BASE}(/.*)?$", "dest": "https://sites.imagehosting.space/t/{KEY}$1" },
 ```
 
 Vercel can't send the origin secret from a secret store, so this connection runs with `require_origin_secret=false`.
@@ -53,7 +54,7 @@ Two places, walked live on 2026-11-04. Netlify has no rules editor in its dashbo
 **1. A `_redirects` file (recommended).** Netlify reads it before `netlify.toml`, it is one line, and it works with drag-and-drop deploys. Open or create `_redirects` in the folder Netlify publishes (`public/` for Vite, Create React App and Astro; otherwise next to `index.html`) and paste this as its **first line**:
 
 ```
-{BASE}/*  https://sites.imagehosting.space/t/{TENANT}/:splat  200!
+{BASE}/*  https://sites.imagehosting.space/t/{KEY}/:splat  200!
 ```
 
 `{BASE}/*` also matches bare `{BASE}`, so no second line is needed. Keep `200!`: without `!` a page the site already has at `{BASE}` wins (`base_shadowed`); a 301 instead of 200 sends visitors away, and browsers cache it. Without `/:splat` every address gets the same page (`splat_missing`).
@@ -63,7 +64,7 @@ Two places, walked live on 2026-11-04. Netlify has no rules editor in its dashbo
 ```toml
 [[redirects]]
   from = "{BASE}/*"
-  to = "https://sites.imagehosting.space/t/{TENANT}/:splat"
+  to = "https://sites.imagehosting.space/t/{KEY}/:splat"
   status = 200
   force = true
 ```
@@ -77,7 +78,7 @@ For both: deploy, then check that the top deploy under **Deploys** says **Publis
 
 ```js
 const RENDERER = "https://sites.imagehosting.space";
-const TENANT = "{TENANT}";
+const TENANT = "{KEY}";
 const BASE = "{BASE}";
 
 export default {
@@ -103,7 +104,7 @@ In the site's `server` block:
 ```nginx
 location {BASE}/ {
     resolver 1.1.1.1 8.8.8.8 valid=300s;
-    rewrite ^{BASE}/(.*)$ /t/{TENANT}/$1 break;
+    rewrite ^{BASE}/(.*)$ /t/{KEY}/$1 break;
     proxy_pass https://sites.imagehosting.space;
     proxy_ssl_server_name on;
     proxy_set_header Host sites.imagehosting.space;
@@ -111,7 +112,7 @@ location {BASE}/ {
 location = {BASE} { return 301 {BASE}/; }
 ```
 
-Put `{TENANT}` in literally: `$host` breaks on `www.`. Reload nginx (`nginx -t && nginx -s reload`).
+Put `{KEY}` in literally: never `$host`. Reload nginx (`nginx -t && nginx -s reload`).
 
 Only if the connection requires the origin secret, add `proxy_set_header x-cade-origin "${CADE_ORIGIN_SECRET}";` inside the `location`. The value comes from the environment through the official image's `/etc/nginx/templates/*.template` substitution, never written into the file. An admin sets that variable.
 
@@ -122,8 +123,8 @@ Needs `mod_proxy`, `mod_proxy_http`, `mod_ssl` and `mod_headers`. In the site's 
 ```apache
 SSLProxyEngine on
 ProxyPreserveHost Off
-ProxyPass        "{BASE}/" "https://sites.imagehosting.space/t/{TENANT}/"
-ProxyPassReverse "{BASE}/" "https://sites.imagehosting.space/t/{TENANT}/"
+ProxyPass        "{BASE}/" "https://sites.imagehosting.space/t/{KEY}/"
+ProxyPassReverse "{BASE}/" "https://sites.imagehosting.space/t/{KEY}/"
 RedirectMatch 301 "^{BASE}$" "{BASE}/"
 ```
 
@@ -141,7 +142,7 @@ const DROP_REQUEST = new Set(["host", "connection", "content-length", "accept-en
 const DROP_RESPONSE = new Set(["content-encoding", "content-length", "transfer-encoding", "connection"]);
 app.use("{BASE}", async (req, res) => {
   try {
-    const upstream = await fetch(`https://sites.imagehosting.space/t/{TENANT}${req.url}`, {
+    const upstream = await fetch(`https://sites.imagehosting.space/t/{KEY}${req.url}`, {
       method: req.method,
       headers: Object.fromEntries(Object.entries(req.headers).filter(([name]) => !DROP_REQUEST.has(name))),
       body: ["GET", "HEAD"].includes(req.method) ? undefined : req,
