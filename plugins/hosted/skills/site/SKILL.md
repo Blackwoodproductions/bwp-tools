@@ -27,11 +27,19 @@ The site serves the simple shell (a plain header and footer) until a captured on
 
 A refusal starting `CADE <status>:` is CADE's own message, for example a public base that doesn't fit the mode, or a second hosted connection: explain it and fix the input. Anything else is the connector refusing: relay it as is.
 
+## Sites that must not be linkable
+
+Nothing on a hosted page names us or matches another client's page: class names, asset paths and the footer carry the site's own prefix, and our server's status page answers only CADE's signed check.
+
+- **Recommend a sub-path mode** (`https://{domain}/articles`) for a site in a link network. The client's own host answers visitors, so nothing public points at our server.
+- **Say what subdomain mode shows** before agreeing to it: the CNAME names our host, every subdomain site shares one IP, and each certificate is in the public logs. Code can't hide that.
+- **The destination is `/t/{KEY}/`**, the connection's `path_key` from `hosted_sites`, never the domain.
+
 ## The origin secret
 
 The renderer can require an `x-cade-origin` header carrying one secret shared by every tenant.
 
-- **Default: don't require it** (`require_origin_secret=false`). `robots.txt` on the renderer keeps crawlers off its own copies, and every article names the client's address as canonical.
+- **Default: don't require it** (`require_origin_secret=false`). The path key in the destination already keeps strangers off the renderer's own copies, and every article names the client's address as canonical.
 - Require it only when an admin decides to and hands the value over themselves, outside Claude, into the host's secret store (a Worker secret, nginx or Apache environment).
 - You never see, print or ask for the value, and it never goes into a committed file such as `vercel.json` or `netlify.toml`. Vercel and Netlify rewrites can't read a secret store, so those hosts run without it.
 - Subdomain mode never uses it.
