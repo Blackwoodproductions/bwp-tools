@@ -24,7 +24,7 @@
     {
       "name": "cade",
       "source": "./plugins/cade",
-      "description": "CADE content-service skills (db, api, flower, WP reconcile/cleanup, term merge) + task-failure auditor agent"
+      "description": "CADE content-service skills (db, api, flower, WP reconcile/cleanup, term merge, related domains) + task-failure auditor agent"
     },
     {
       "name": "ranking",
