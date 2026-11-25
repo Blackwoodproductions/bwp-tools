@@ -4,7 +4,7 @@ Blackwood Productions' Claude plugins. This public repo **is** the marketplace (
 
 | Plugin | Gives you | Install it if you work on |
 |---|---|---|
-| `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content` + agent `cade-task-failure-auditor` | cade-service |
+| `cade` | `cade-db-queries`, `cade-api`, `seo-api`, `cade-flower`, `cade-terms`, `check-for-seomoney-content`, `dump-clustered-content`, `cleanup-html-blocks`, `reconcile-wp-content`, `related-domains` (the CADE domains in a related line of business; via cade-mcp) + agent `cade-task-failure-auditor` | cade-service |
 | `seolocal` | `seolocal-db-queries`, `seolocal-admin` (create domain, add keywords, change package — SEO Local staff admins; via cade-mcp) | seolocal-app |
 | `ranking` | `ranking-db-queries` | ranking-service |
 | `hosted` | `overview`, `site`, `check`: onboard sites onto CADE's hosted renderer (create the connection, the rewrite or DNS change per host, the rewrite check that names who answered and the fix; via cade-mcp, creating a connection is for admins) | hosted renderer onboarding |
@@ -77,6 +77,7 @@ Customize → Plugins → **Add marketplace** → `Blackwoodproductions/bwp-tool
 | | Claude Code / Desktop *Code* tab | Desktop chat / Cowork |
 |---|---|---|
 | `*-db-queries` skills (read) + Logfire | ✅ | ✅ |
+| `cade:related-domains` (sign in to cade-mcp when asked) | ✅ | ✅ |
 | `cade-task-failure-auditor` agent | ✅ | Cowork only |
 | `bwp-rw` (UPDATE, `bwp_admins` only) | ✅ | ✅ |
 | cade script skills (§2) | ✅ | ✗ |

@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "cade-mcp": { "type": "http", "url": "https://cade-mcp.imagehosting.space/mcp" }
+  }
+}
