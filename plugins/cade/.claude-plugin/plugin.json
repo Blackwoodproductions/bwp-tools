@@ -1,7 +1,7 @@
 {
   "name": "cade",
-  "version": "1.4.1",
-  "description": "CADE content-service skills: read-only prod SQL (cade-db-queries), FastAPI client (cade-api) and its seo-service twin (seo-api), Celery/Flower control (cade-flower), WordPress reconcile/cleanup, term-merge flow, SEOMoney content probes, related domains through the cade-mcp connector (related-domains), plus the cade-task-failure-auditor agent.",
+  "version": "1.5.0",
+  "description": "CADE content-service skills: read-only prod SQL (cade-db-queries), FastAPI client (cade-api) and its seo-service twin (seo-api), Celery/Flower control (cade-flower), WordPress reconcile/cleanup, term-merge flow, SEOMoney content probes, and, through the cade-mcp connector, related domains (related-domains), BRON/CADE article generation and republishing (content) and domain jobs such as crawl, categorization, CSS analysis, keywords, term sync, summaries and task retry/cancel (jobs), plus the cade-task-failure-auditor agent.",
   "author": {
     "name": "rascoder_og"
   },
