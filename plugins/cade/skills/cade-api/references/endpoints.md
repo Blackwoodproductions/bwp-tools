@@ -122,6 +122,7 @@ python <skill-dir>/scripts/call_api.py GET /domains/example.com/bron/cutover/ver
 | `GET`  | `/domains/{d}/faqs/unprocessed-summary` | Unprocessed FAQ summary. |
 
 Publishing commits to WordPress/SEOMoney — externally visible, treat `--confirm` seriously.
+A WordPress publish (`/articles/publications/*`) signs in with the domain's default WordPress connection (username, application password, `site_url`); any sent in `platform_config` are ignored.
 
 ## Scheduling
 

@@ -19,4 +19,13 @@ The `hosted` plugin onboards a client site onto CADE's hosted renderer through t
 |---|---|
 | [Onboard a site on the hosted renderer](hosted-onboarding.md) | A client's articles should appear under their own domain (`/articles` or `articles.`) without WordPress. |
 
+## CADE content and jobs
+
+The `cade` plugin's `content` and `jobs` skills queue articles and domain jobs through the same `cade-mcp` connector: install `bwp-core` and `cade` and sign in. Any operator may use them. Each write repeats the domain in `confirm_domain`, and a site another operator is migrating needs their OK (`force`).
+
+| Skill | When you need it |
+|---|---|
+| `cade:content` | New BRON or CADE articles for a domain (for example "queue 3 BRON articles on example-plumbing.com"), one CADE article republished because it never reached the site, or a failed article retried. It reads the domain's connections and schedules first and picks the tool for its platform and strategy. |
+| `cade:jobs` | A fresh crawl, categorization, CSS analysis, keyword discovery, WordPress term sync or keyword summary, or a scheduled task retried or cancelled. It checks what is already queued first. |
+
 All domain names, ids and keywords in these pages are made-up examples. Look up the real ones with the SQL shown in each tutorial.
